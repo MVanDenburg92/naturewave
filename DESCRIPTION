@@ -1,6 +1,6 @@
 Package: naturewave
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Version: 0.0.1
 Author: Miles Van Denburg
 Maintainer: Miles Van Denburg <mvandenburg@clarku.edu>
 Description: Final Project Package for GEOG246-346 class.
