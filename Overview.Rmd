@@ -1,0 +1,76 @@
+---
+title: "Overview"
+author: "Miles Van Denburg & Gabriel Yarleque"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc_depth: 3
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Overview{#overview}
+  
+## Summary: A brief (up to 250 words) description of the project, and a bullet point or enumerated list of its primary objectives.
+
+1. We plan to Assess the correlation between acoustic indices at multiple buffers and the variables in order to identify the scale of influence (buffer size where they peak). 
+Imperviousness, connectedness, a vegetative structure using r^2 and their correlations against the sound indices (NDSI, Biophony, Anthrophony)
+
+2. The next stage in our  the BIOMOD package to run a random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
+Variables to include in the random forest model: 
+IUCN richness
+NDSI -- Biophony, Anthrophony (Already Calculated)
+NDVI (Already calculated)
+NDBI (Already calculated)
+
+3. Examine the importance of the variables of interest: imperviousness, connectedness, a vegetative structure using r^2 and their correlations against the sound indices (NDSI, Biophony, Anthrophony)
+Pull plots and tables that show the insignificance of the other 4 indices (AEI, ACI, BI, ADI) 
+  
+  
+## Approach and Method: An outline of the analytical methods and code you plan to use, including the names of key packages that you will draw on. This section should be composed of the following sub-sections:
+  
+### Data: A brief (~250 words) description and visualization of the datasets you will be using. That means spatial plots of the main datasets and their key values, and, as a bonus, a plot of summary statistics, e.g. a histogram or boxplot of one of the more importants variables in the dataset.
+
+11 Mass Audubon Sites CSV with NDSI and other sound Indices vs. NDVI/NDBI indices with R^2 data per buffer 
+From the Amhest [CAPS: Conservation Assessment and Prioritization System, Massachusetts Index of Ecological Integrity 2011 data](http://jamba.provost.ads.umass.edu/web/caps2011/CAPS2011data.htm)
+--Imperviousness,
+--connectedness, 
+--vegetative structure
+
+### Code: A bullet point summary of the analysis and coding approach that you propose to follow. For teams, this section should include a description of which member will be responsible for each bullet point.
+
+### Timelines: Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
+
+* 4/13 -- Both--Draft of Vignette submitted to Github, send screenshots of code to Estes
+* 4/15 -- Gabo-- Downloads Repo and is able to make commits remotely, 
+* 4/20 -- Miles-- Complete linear correlation between variables and Acoustic indices at multiple buffers -- to identify the scale of influence
+Refine code and results 
+* 4/22 -- Gabo-- Prepare to run Random Forest Regression
+* 4/27 -- BOTH-- Interpret results and clean up code 
+
+Random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
+Variables to include in the random forest model: 
+IUCN richness
+NDSI -- Biophony, Anthrophony (Already Calculated)
+NDVI (Already calculated)
+NDBI (Already calculated)
+
+## Anticipated outcomes: Briefly describe, as bullet points, the outcomes you expect for each of your primary project objectives
+
+
+***
+<center>
+[Back to top](#overview)
+</center>
+***
