@@ -6,7 +6,7 @@ output:
   prettydoc::html_pretty:
     theme: cayman
     highlight: github
-    toc_depth: 3
+    toc_depth: 5
     toc: yes
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -42,13 +42,42 @@ Pull plots and tables that show the insignificance of the other 4 indices (AEI, 
   
 ### Data: A brief (~250 words) description and visualization of the datasets you will be using. That means spatial plots of the main datasets and their key values, and, as a bonus, a plot of summary statistics, e.g. a histogram or boxplot of one of the more importants variables in the dataset.
 
-11 Mass Audubon Sites CSV with NDSI and other sound Indices vs. NDVI/NDBI indices with R^2 data per buffer 
+#### Methodology to Formulate Sound Indices and Habitat Quality Measures
+
+-- Wildlife Acoustic SM4 sound recorders were installed during June and July of 2019 and programmed to extract audio samples from 4 AM-6 AM for five days. A total of eleven sites were sampled, including 10 samples in Mass Audubon sites throughout central Massacchusetts (MA), and one sample in Leadmine Mountain forest in Sturbridge (MA).  
+-- From these soundscapes, the Normalized Difference Soundscape Index, (NDSI), Biophony (sounds from biodiversity),  Anthrophony (sounds from humans), Bioacoustics Index (BI), Acoustic Complexity Index (ACI),  Acoustic Diversity Index (ADI), and Acoustic Evenness Index (AEI) were calculated. The relationship between these indices and habitat quality measures were extracted. 
+-- Habitat quality components were identified as the vegetation productivity, measured as the normalized difference vegetation index (NDVI), built-up magnitude, measured as the normalized difference-built index NDBI, and traffic influence, measured as distance from primary, secondary, and tertiary roads. 
+-- NDVI and NDBI were calculated using Sentinel-2 imagery from Google Earth Engine. Relationships of NDBI and NDBI were extracted at multiple distance buffers from recoding sites to evaluate the scale at which these habitat quality measures had the highest influence on biodiversity. 
+
+#### R Pacckages Utilized for the Methodology
+
+The `soundecology`, `tuneR`, and `seewave` packages were utilized in order to read in the sound files and analyze the sound frequencies by Biophony and Anthrophony.  Sound indices were calculated from these frequencies using fuctions within the package to formulate the NDSI, BI, ACI, ADI, and AEI indices for the +1200 records for the 11 sites. The `tidyverse` library was loaded in order for us to bclean and "tidy" the data into clean csvs. The csvs were then exported and then re-read back in and converted into a singular dataframe organized by site. Linear models were then created to examine each sound index --in addition to anthrophony & biophony-- vs the NDVI and NDBI results by buffer 500-3000 meters. The linear r squared values were extracted from each of the linear models and compiled into a dataframe organized by buffer size. The r^2 values were then plotted out as "Sound Indices r^2 values vs NDVI by Buffer" and "Sound Indices r^2 values vs NDBI by Buffer". 
+
+A list of used packages are listed below: 
+
+* library(tidyverse)
+* library(tidyselect)
+* library(ggplot2)
+* library(soundecology)
+* library(tuneR)
+* library(seewave)
+* library(nlme)
+* library(landscapemetrics)
+* library(landscapetools)
+* library(rasterVis)
+
+
 From the Amhest [CAPS: Conservation Assessment and Prioritization System, Massachusetts Index of Ecological Integrity 2011 data](http://jamba.provost.ads.umass.edu/web/caps2011/CAPS2011data.htm)
---Imperviousness,
---connectedness, 
---vegetative structure
+
+The following variables will be analyzed against the obtained NDSI vs NDVI & NDBI relationship peak values. 
+
+- Imperviousness
+- connectedness 
+- vegetative structure
 
 ### Code: A bullet point summary of the analysis and coding approach that you propose to follow. For teams, this section should include a description of which member will be responsible for each bullet point.
+
+
 
 ### Timelines: Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
 
