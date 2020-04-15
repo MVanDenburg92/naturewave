@@ -75,6 +75,8 @@ The following variables will be analyzed against the obtained NDSI vs NDVI & NDB
 - connectedness 
 - vegetative structure
 
+
+
 ### Code: A bullet point summary of the analysis and coding approach that you propose to follow. For teams, this section should include a description of which member will be responsible for each bullet point.
 
 
@@ -83,7 +85,17 @@ The following variables will be analyzed against the obtained NDSI vs NDVI & NDB
 
 * 4/13 -- Both--Draft of Vignette submitted to Github, send screenshots of code to Estes
 * 4/15 -- Gabo-- Downloads Repo and is able to make commits remotely, 
-* 4/20 -- Miles-- Complete linear correlation between variables and Acoustic indices at multiple buffers -- to identify the scale of influence
+* 4/17 -- Miles-- Complete linear correlation between variables and Acoustic indices at multiple buffers -- to identify the scale of influence
+* More specifically: 
+Complete Obtaining values for variables of interest at buffer sizes 500-3000
+- Imperviousness
+- connectedness 
+- vegetative structure
+Run Linear correlations and R^2 analyses between variables and acoustic indices 
+Identify peaks 
+
+
+
 Refine code and results 
 * 4/22 -- Gabo-- Prepare to run Random Forest Regression
 * 4/27 -- BOTH-- Interpret results and clean up code 
@@ -92,12 +104,19 @@ Refine code and results
 
 ## Anticipated outcomes: Briefly describe, as bullet points, the outcomes you expect for each of your primary project objectives
 
-Random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
-Variables  oncluded in the random forest model: 
-IUCN richness
-NDSI -- Biophony, Anthrophony (Already Calculated)
-NDVI (Already calculated)
-NDBI (Already calculated)
+- Random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
+ --- Variables  oncluded in the random forest model: 
+ --- IUCN richness
+ --- NDSI -- Biophony, Anthrophony (Already Calculated)
+ --- NDVI (Already calculated)
+ --- NDBI (Already calculated)
+
+- NDVI an NDBI Maps of Sites in Massachusets using R package reticulate to translate the work done in GEE to one environment-- R
+--3000 buffers and one map each of one site at various buffer levels 
+
+-- Plots of examined variables of interest: imperviousness, connectedness, a vegetative structure using r^2 and their correlations against the sound indices (NDSI, Biophony, Anthrophony)
+
+
 
 ***
 <center>
