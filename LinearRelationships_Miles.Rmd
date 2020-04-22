@@ -1,0 +1,680 @@
+---
+title: "LinearRelationships_Miles"
+author: "Miles Van Denburg"
+date: "4/20/2020"
+output: html_document
+---
+
+References: 
+
+#Calculating metrics 
+
+
+#Sources: 
+#https://www.r-bloggers.com/how-to-calculate-landscape-metrics-for-local-landscapes/
+#https://r-spatialecology.github.io/landscapemetrics/reference/list_lsm.html
+#https://r-spatialecology.github.io/landscapemetrics/
+#https://r-spatialecology.github.io/landscapemetrics/articles/articles/guide_sample_lsm.html#extract-landscape-metrics-at-sample-points
+#https://r-spatialecology.github.io/landscapemetrics/reference/sample_lsm.html#details
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Setting up the package with the packages we plan to use
+```{r}
+#Libraries
+library(tidyverse)
+library(tidyselect)
+library(ggplot2)
+library(soundecology)
+library(tuneR)
+library(seewave)
+library(nlme)
+library(dplyr)
+library(mefa)
+library(plotly)
+library(geospaar)
+library(landscapemetrics)
+library(RColorBrewer)
+
+
+install.packages("USAboundaries")
+install.packages("maps")
+#rnaturalearth
+#maps package
+#tidycensus
+library(maps)
+library(USAboundaries)
+```
+
+
+
+
+Brings in the CSVS with the buffer and 
+```{r}
+setwd("~/Spatial_Analysis_R/naturewave/CSVS")
+# DF<- read.csv("ALL_INDICES.csv")
+
+#Your Choice whether to read in the data from a csv or use the made datafram
+
+DF <- read.csv("DF_Fulltable_CBIND.csv")
+
+
+DF_transposed <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
+
+
+my_metric3 <- pivot_wider(DF_transposed, names_from = Buffer, values_from = NDSI_select)
+# my_metric3
+# 
+```
+
+
+## Bring in the shapefile for the points of interest and examine the areas
+
+Think about RGEE and how it could be used  
+
+```{r}
+##import Shapefile for the sites of interest
+setwd("~/Spatial_Analysis_R/naturewave/CENSUS2010TIGERROADS_SHP/")
+sample_points_f <- st_read("sample_sites_projected.shp")
+
+sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
+
+
+
+
+##Examine geometry list-column 
+st_geometry(sample_points_f)
+
+##Examine attributes of sample points
+attributes(sample_points_f)
+
+#Examines coordinate system of the sample points 
+st_crs(sample_points_f)
+
+
+
+sample_points_Albers <- st_read("sample_sites_projected_1.shp")
+
+sample_points_Albers
+
+
+#Examines coordinate system of the sample points projected to NAD 1983 Albers 
+st_crs(sample_points_Albers)
+
+
+
+#Change crs to be of same system for Sample_points_f and my_aoi_raster
+# 
+# sample_points_f <- st_transform(x = sample_points_f, crs = st_crs(my_raster))
+# st_crs(sample_points_f)
+# 
+# my_aoi_raster <- st_transform(x = my_aoi_raster, crs = st_crs(my_raster))
+# st_crs(my_aoi_raster)
+# 
+# my_aoi_raster_proj <- projectRaster(my_aoi_raster, crs = "+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs")
+
+
+
+
+```
+
+
+```{r}
+# Import AOI shapefile containing site
+
+setwd("~/Spatial_Analysis_R/naturewave/CENSUS2010TIGERROADS_SHP")
+AOI <- st_read("AOI.shp")
+AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
+
+#We can also create the shapefile this way
+pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.69707031707116, 42.69707031707116, 42.02124129930544), 
+                             y = c(-71.53416964017146, -71.53416964017146, -72.30321260892146, -72.30321260892146, -71.53416964017146))))
+
+
+
+#import counties for US
+massmap <- map('county', 'Massachusetts') # county map of Massachusetts
+
+
+
+counties <- st_as_sf(map(database = "county", plot = FALSE, fill = TRUE)) %>% lwgeom::st_make_valid()
+
+
+plot(counties[, "ID"], border = "transparent")
+counties %>% filter(grepl("worcester", ID, ignore.case = TRUE))
+
+
+# mutate(county = gsub(",.*", "", Province.State), state = gsub(".*, ", "", Province.State)) %>%
+# group_by(state, county)
+
+
+#add in state and county fields using data from ID column 
+counties <- counties %>% mutate(state = gsub(",.*", "", ID)) %>% mutate(county = gsub(".*,", "", ID))
+
+massmaps <- counties %>% filter(grepl("massachusetts", state, ignore.case = TRUE))
+#plot(massmaps,border = "transparent")
+#or masscounties %>% plot(.,border = "transparent")
+
+
+massstate <- massmaps[, "state"] 
+#plot(massmaps[, "state"],border = "transparent")
+
+masscounties <- massmaps[, "county"] 
+plot(massmaps[, "county"],border = "transparent")
+
+str(masscounties)
+st_crs(masscounties)
+
+masscounties <- st_transform(x = masscounties, crs = st_crs(sample_points_f))
+
+#import counties massachussets state boundary
+
+
+#Plot out AOI on top of massachussets state boundary
+
+
+```
+
+```{r}
+# ##import Raster isolated to AOI, in Albers Equal Area
+# 
+# my_aoi_raster_albers = raster("D:/RA-withSangermano/SpatialData/NOAA-CCAP/aoi_massclass_2.tif")
+# my_aoi_raster_albers
+# st_crs(my_aoi_raster_albers)
+# plot(my_aoi_raster_albers)
+```
+
+
+
+
+
+```{r}
+#import immperviousness raster file
+imperv <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
+plot(imperv)
+plot(sample_points_f, col = "red", add = TRUE)
+plot(AOI, add = TRUE)
+st_crs(imperv)
+
+#Crop Imperv to AOI and plot
+imperv_cropped <- crop(imperv, y = AOI)
+plot(imperv_cropped)
+plot(sample_points_f, col = "red", add = TRUE)
+
+
+
+# imperv_alb <- projectRaster(from = imperv, res = 11000, crs = crs(sample_points_f), 
+#                           method = "ngb")
+# 
+# 
+# 
+# my_aoi_raster <- st_transform(x = imperv, crs = st_crs(my_raster))
+# st_crs(imperv)
+
+
+#import connectedness raster file
+connect <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
+plot(connect)
+plot(sample_points_f, col = "red", add = TRUE)
+plot(AOI, add = TRUE)
+st_crs(connect)
+
+
+#Crop connect to AOI and plot
+connect_cropped <- crop(connect, y = AOI)
+plot(connect_cropped)
+plot(sample_points_f, col = "red", add = TRUE)
+
+
+#import structure raster file
+structure <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
+plot(structure)
+plot(sample_points_f, col = "red", add = TRUE)
+plot(AOI, add = TRUE)
+st_crs(structure)
+
+#Crop structure to AOI and plot
+structure_cropped <- crop(structure, y = AOI)
+plot(structure_cropped)
+plot(sample_points_f, col = "red", add = TRUE)
+
+
+
+###Example plot of data
+
+par(mar = c(0, 0, 1, 0) + .1)
+plot(structure, c, axes = FALSE, nr = 4)
+plot(sample_points_f, col = "red", add=TRUE)
+
+par(mar = c(0, 0, 1, 0) + .1)
+plot(structure, c, axes = FALSE, nr = 4)
+sample_points_f %>% slice(1) %>% plot(col = "red", add=TRUE)
+
+```
+
+
+```{r}
+
+# # Creates matrix of our sample points to utilize with landscapemetrics
+# matrix1 <-  sample_points_f[,5]
+# str(matrix1)
+# 
+# sample_points_online <- matrix(c(10, 5, 25, 15, 5, 25), ncol = 2, byrow = TRUE)
+# 
+# sampLat <- sample_points_f$Lat
+# sampLong <- sample_points_f$Long
+# 
+# sampboth <-  matrix(c(sample_points_f$Lat,sample_points_f$Long), ncol = 2, byrow = FALSE)
+
+#Create matrix of points from geometry fieldof our sample points to utilize with landscapemetrics
+samp_matrix <- unlist(matrix(sample_points_f$geometry, ncol = 2))
+samp_matrix <- matrix(data = samp_matrix, ncol = 2, byrow = TRUE)
+
+
+
+```
+
+
+calculate landscape metrics on many different buffer sizes at the same time.
+You just need to select what sizes you are interested in and use the sample_lsm() function inside a map_dfr() function.
+```{r}
+
+
+# creating buffers of 3000 and 6000 meters 
+sizes = c(500, 1000, 1500, 2000, 2500, 3000)
+
+# calculating shdi (landscape metric) for each buffer for imperv_cropped
+imperv_cropped_buffs <- sizes %>% set_names() %>% purrr::map_dfr(~sample_lsm(imperv_cropped, points = sample_points_f, what = "lsm_l_shdi", size = .), .id = "buffer")
+```
+
+
+
+# Calculates the percentage landcover metric for the raster file. 
+#To calculate metrics in a buffer around sample points, sample_lsm() can be used, allowing us to specify shape (circle, square, or restangle) and the area of buffers around the sample points, and then calculates the specified metrics
+
+
+
+# Details
+AREAMN = mean(AREA[patchij ])
+where AREA[patchij ] is the area of each patch in hectares
+AREA_MN is an ’Area and Edge metric’. The metric summarises the landscape as the mean of all
+patch in the landscape. The metric is a simple way to describe the composition of the landscape.
+Especially together with the total landscape area (lsm_l_ta), it can also give an an idea of patch
+structure (e.g. many small patches vs. few larges patches).
+
+
+```{r}
+
+#List all available landscape metrics depending on the provided filter arguments.
+#If an argument is not provided, automatically all possibilities are selected.
+list_lsm()
+
+#Check to see if the landscape is good to use
+check_landscape(imperv_cropped)
+
+metric_imperv <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+
+metric_imperv
+
+
+metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+
+metric_struct
+
+
+metric_connect <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+
+metric_connect
+
+
+#Drop rows with NA in the values field
+# 
+# metric3 %>% drop_na(value)
+
+# The output data frame has two rows for each grid cell; therefore, 
+# if we want to connect the result with a spatial object, we need to reformat it.
+# It can be done with the pivot_wider() function from the tidyr package.
+
+# library(tidyr)
+# my_metric3 <- pivot_wider(metric3, names_from = metric, values_from = value)
+# my_metric3
+# 
+
+
+
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site, and drop the id field with NA values
+#Used anchors. ^ Asserts that we are at the start. $ Asserts that we are at the end.
+
+# my_metric_pland_All <- my_metric_pland_All %>% 
+#   mutate(
+#     SiteName = case_when(
+#       grepl("^1$", plot_id) ~ "Leadmine Mountain",
+#       grepl("^2$", plot_id) ~ "Braod Meadow Brook", 
+#       grepl("^3$", plot_id) ~ "Burncoat Pond", 
+#       grepl("^4$", plot_id) ~ "Pierpoint Meadow",
+#       grepl("^5$", plot_id) ~ "Rutland Brook", 
+#       grepl("^6$", plot_id) ~ "Cooks Canyon", 
+#       grepl("^7$", plot_id) ~ "Eagle Lake",
+#       grepl("^8$", plot_id) ~ "Wachusett Meadow", 
+#       grepl("^9$", plot_id) ~ "Lake Wampanoag", 
+#       grepl("^10$", plot_id) ~ "Flat Rocks",
+#       grepl("^11$", plot_id) ~ "Lincoln Woods", 
+#     )
+#   ) %>% dplyr::select(layer, level, ClassName, class, metric, value, SiteName, size, plot_id, percentage_inside)
+# 
+# 
+
+
+```
+
+Calculate area mean of landscape by buffer using lsm_l_area_mn
+
+```{r}
+#lsm_l_cai_mn
+
+metric_imperv_core <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = " landscape", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+
+metric_imperv_core
+
+plot(imperv_cropped)
+
+show_patches(imperv_cropped)
+
+
+
+metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+
+metric_struct
+
+
+metric_connect <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+
+metric_connect
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+set.seed(1)
+buffs_extract <- lapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
+  #2a
+  buf_samplesites <- st_buffer(sample_points_f, dist = x) # here is the buffer
+  #2c
+  list("sites" = buf_samplesites)
+  #ex <- extract(imperv_cropped, buf_samplesites, fun=mean, na.rm=TRUE, df=TRUE)
+
+})
+
+
+# #attempt at completing this using a forloop
+# buffs_extract_forloop <-  for(i in sizes){
+# buf_samplesites[[i]] <- st_buffer(sample_points_f, sizes[i])
+# list("sites" = buf_samplesites)
+# 
+# }
+
+
+
+#Extract the mean value from the impervious tif file for each buffer zone
+
+set.seed(1)
+buffs_extract_zonal_Impervious <- sapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
+zonal <- extract(imperv_cropped, sample_points_f, fun= mean, buffer = x, na.rm=TRUE)
+})
+buffs_extract_zonal_Impervious <- as.data.frame(buffs_extract_zonal_Impervious)
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site
+
+buffs_extract_zonal_Impervious <- buffs_extract_zonal_Impervious %>% mutate(SiteName = sample_points_f$Site) %>% rename("Buffer 500 (m)" = V1,  "Buffer 1000 (m)" = V2, "Buffer 1500 (m)" = V3, "Buffer 2000 (m)" = V4, "Buffer 2500 (m)" = V5, "Buffer 3000 (m)" = V6) %>% dplyr::select(SiteName, everything())
+
+
+
+#Extract the mean value from the Connectedness tif file for each buffer zone
+
+set.seed(1)
+buffs_extract_zonal_connect <- sapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
+zonal <- extract(connect_cropped, sample_points_f, fun= mean, buffer = x, na.rm=TRUE)
+})
+buffs_extract_zonal_connect <- as.data.frame(buffs_extract_zonal_connect)
+
+
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site
+
+buffs_extract_zonal_connect <- buffs_extract_zonal_connect %>% mutate(SiteName = sample_points_f$Site) %>% rename("Buffer 500 (m)" = V1,  "Buffer 1000 (m)" = V2, "Buffer 1500 (m)" = V3, "Buffer 2000 (m)" = V4, "Buffer 2500 (m)" = V5, "Buffer 3000 (m)" = V6) %>% dplyr::select(SiteName, everything())
+
+
+#Extract the mean value from the Structure tif file for each buffer zone
+
+
+set.seed(1)
+buffs_extract_zonal_structure <- sapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
+zonal <- extract(structure_cropped, sample_points_f, fun= mean, buffer = x, na.rm=TRUE)
+})
+buffs_extract_zonal_structure <- as.data.frame(buffs_extract_zonal_structure)
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site
+
+buffs_extract_zonal_structure <- buffs_extract_zonal_structure %>% mutate(SiteName = sample_points_f$Site) %>% rename("Buffer 500 (m)" = V1,  "Buffer 1000 (m)" = V2, "Buffer 1500 (m)" = V3, "Buffer 2000 (m)" = V4, "Buffer 2500 (m)" = V5, "Buffer 3000 (m)" = V6) %>% dplyr::select(SiteName, everything())
+
+
+# ex <- extract(x = imperv_cropped, y = samp_matrix, method='simple', buffer= c(500, 1000, 1500, 2000, 2500, 3000), small=FALSE, cellnumbers=FALSE, fun=mean, na.rm=TRUE, df=TRUE)
+# 
+# 
+# buffs_extract <- lapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
+#   set.seed(123)
+#   #2a
+#   buf_samplesites<- sample_points_f %>% st_buffer(dist = x) # here is the buffer
+#   #2c
+#   ex <- extract(imperv_cropped, buf_samplesites, fun= mean, na.rm=TRUE)
+#   
+#   list("sites" = buf_samplesites)
+#   list("zonal stats" = ex)
+#   #ex <- extract(imperv_cropped, buf_samplesites, fun=mean, na.rm=TRUE, df=TRUE)
+# 
+# })
+
+
+
+
+# ex <- extract(imperv_cropped, buffs_no_extract, fun=mean(), na.rm=TRUE, df=TRUE)
+# 
+# 
+# plot(buffs)
+
+
+
+#Attempt 1 to plot out the buffer sites using a for loop
+
+par(mar = c(0, 0, 0, 0))
+# cols <- c("cyan", "blue2", "orange", "purple", "green4", "antiquewhite")  # 2
+
+# masscounties %>%  st_union() %>%  plot(col = "grey")
+plot(st_geometry(AOI))
+
+
+cols <- brewer.pal(12, "BuGn")
+
+for(i in length(buffs_extract):1) {  # 4
+  plot(st_geometry(buffs_extract[[i]]$sites), col = NA, add = TRUE)  # 5
+}
+
+
+
+#Plots out buffers using sapply instead of forloop
+#Uses extent of AOI to show rings as they are too granular to be shown on the masscounties map
+
+par(mar = c(0, 0, 0, 0))
+
+# masscounties %>% st_union() %>%  plot(col = "grey")
+
+plot(st_geometry(AOI))
+set.seed(1)
+sapply(1:6, function(x) { 
+plot(st_geometry(buffs_extract[[x]]$sites), add = TRUE, col = NA, pch = 1)
+})
+
+
+#Manual plot out of the sites to confirm the buffers are working 
+# masscounties %>% st_union() %>%  plot(col = "grey")
+plot(st_geometry(AOI))
+plot(buffs_extract[[6]]$sites, pch = 1, col = NA, add = TRUE)
+plot(buffs_extract[[5]]$sites, pch = 1, col = NA, add = TRUE)
+plot(buffs_extract[[4]]$sites, pch = 1, col = NA, add = TRUE)
+plot(buffs_extract[[3]]$sites, pch = 1, col = NA, add = TRUE)
+plot(buffs_extract[[2]]$sites, pch = 1, col = NA, add = TRUE)
+plot(buffs_extract[[1]]$sites, pch = 1, col = NA, add = TRUE)
+
+
+
+
+#1, 3, 5, 9, 12 have values >70
+
+#print out metric_imperv
+
+buff500_firstsite <- buffs_extract[[1]]$sites %>% slice(1)
+buff500_thirdsite <- buffs_extract[[1]]$sites %>% slice(3)
+
+buff500_fifthsite <- buffs_extract[[1]]$sites %>% slice(5)
+
+buff500_ninthsite <- buffs_extract[[1]]$sites %>% slice(9)
+
+
+metric_imperv
+#plot out cropped imperv values with selected outlier values
+plot(imperv_cropped, ext = extent(buff500_firstsite))
+buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+
+plot(imperv_cropped, ext = extent(buff500_thirdsite))
+buffs_extract[[1]]$sites %>% slice(3) %>% plot(col = NA, add=TRUE, border = "red")
+
+plot(imperv_cropped, ext = extent(buff500_fifthsite))
+buffs_extract[[1]]$sites %>% slice(5) %>% plot(col = NA, add=TRUE, border = "red")
+
+plot(imperv_cropped, ext = extent(buff500_ninthsite))
+buffs_extract[[1]]$sites %>% slice(9) %>% plot(col = NA, add=TRUE, border = "red")
+
+buffs_extract[[1]]$sites %>% slice(11) %>% plot(col = NA, add=TRUE, border = "red")
+
+
+#Print out plots of buffers
+plot(buffs_extract[[1]]$sites, pch = 1, col = NA)
+
+
+
+
+```
+
+
+
+The landscapemetrics package has a function designed for calculations of landscape metrics for a given buffer.
+It is called sample_lsm() and it expects, at least three input arguments – a raster, a vector (points), and a buffer size. As a default, it calculates all of the available metrics in a square buffer, where buffer size is the side-length in map units (e.g. meters).
+
+```{r}
+
+##> Calculate percentage of landscape area and edge metric class lsm_c_pland 
+my_metric_pland = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_pland")
+my_metric_pland
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site
+
+my_metric_pland <- my_metric_pland %>% 
+  mutate(
+    SiteName = case_when(
+      grepl("1", plot_id) ~ "Leadmine Mountain",
+      grepl("2", plot_id) ~ "Braod Meadow Brook", 
+      grepl("3", plot_id) ~ "Burncoat Pond", 
+      grepl("4", plot_id) ~ "Pierpoint Meadow",
+      grepl("5", plot_id) ~ "Rutland Brook", 
+      grepl("6", plot_id) ~ "Cooks Canyon", 
+      grepl("7", plot_id) ~ "Eagle Lake",
+      grepl("8", plot_id) ~ "Wachusett Meadow", 
+      grepl("9", plot_id) ~ "Lake Wampanoag", 
+      grepl("10", plot_id) ~ "Flat Rocks",
+      grepl("11", plot_id) ~ "Lincoln Woods", 
+    )
+  ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside)
+
+
+
+
+#Calculate Number of patches of class (Aggregation metric)
+
+my_metric_lsm_c_np = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_np")
+my_metric_lsm_c_np
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site
+
+my_metric_lsm_c_np <- my_metric_lsm_c_np %>% 
+  mutate(
+    SiteName = case_when(
+      grepl("1", plot_id) ~ "Leadmine Mountain",
+      grepl("2", plot_id) ~ "Braod Meadow Brook", 
+      grepl("3", plot_id) ~ "Burncoat Pond", 
+      grepl("4", plot_id) ~ "Pierpoint Meadow",
+      grepl("5", plot_id) ~ "Rutland Brook", 
+      grepl("6", plot_id) ~ "Cooks Canyon", 
+      grepl("7", plot_id) ~ "Eagle Lake",
+      grepl("8", plot_id) ~ "Wachusett Meadow", 
+      grepl("9", plot_id) ~ "Lake Wampanoag", 
+      grepl("10", plot_id) ~ "Flat Rocks",
+      grepl("11", plot_id) ~ "Lincoln Woods", 
+    )
+  ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside)
+
+#Check that the right amount of names appear = 11
+length(unique(my_metric_pland_All$SiteName))
+
+
+```
+
+
+
+# Example calculations for landscape metrics
+```{r}
+
+#LandScape Calculations
+
+# general structure
+lsm_()
+
+# Patch level
+## lsm_p_"metric"
+lsm_p_enn()
+
+# Class level
+## lsm_c_"metric"
+lsm_c_enn()
+
+# Landscape level
+## lsm_p_"metric"
+lsm_l_enn()
+
+
+
+# calculate for example the Euclidean nearest-neighbor distance on patch level
+lsm_p_enn(my_aoi_raster)
+
+
+#As landscapemetrics are known to be scale dependent, it becomes necessary to use a moving window approach to deal with this
+#The moving window assigns to each focal cell in the landscape the metric value of its local neighborhood specified by a neighborhood matrix.
+#The resulting raster describes the landscape in regard to the local variability of the chosen metricc.
+#Within landscapemetrics a moving window approach can be used by using window_lsm()
+window <- matric(1, nrow  =5, ncol = 5)
+window_lsm(x, window = window, what = c("lsm_l_pr", "lsm_l_joinent"))
+
+
+```
+
