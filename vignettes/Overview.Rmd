@@ -9,7 +9,7 @@ output:
     toc_depth: 5
     toc: yes
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{overview}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Overview{#overview}
   
-## Summary: A brief (up to 250 words) description of the project, and a bullet point or enumerated list of its primary objectives.
+A brief (up to 250 words) description of the project, and a bullet point or enumerated list of its primary objectives.
 
 1. We plan to Assess the correlation between acoustic indices at multiple buffers and the variables in order to identify the scale of influence (buffer size where they peak). 
 Imperviousness, connectedness, a vegetative structure using r^2 and their correlations against the sound indices (NDSI, Biophony, Anthrophony)
@@ -38,18 +38,21 @@ NDBI (Already calculated)
 Pull plots and tables that show the insignificance of the other 4 indices (AEI, ACI, BI, ADI) 
   
   
-## Approach and Method: An outline of the analytical methods and code you plan to use, including the names of key packages that you will draw on. This section should be composed of the following sub-sections:
+# Approach and Method 
+An outline of the analytical methods and code you plan to use, including the names of key packages that you will draw on. This section should be composed of the following sub-sections:
   
-### Data: A brief (~250 words) description and visualization of the datasets you will be using. That means spatial plots of the main datasets and their key values, and, as a bonus, a plot of summary statistics, e.g. a histogram or boxplot of one of the more importants variables in the dataset.
+## Data 
+A brief (~250 words) description and visualization of the datasets you will be using. That means spatial plots of the main datasets and their key values, and, as a bonus, a plot of summary statistics, e.g. a histogram or boxplot of one of the more importants variables in the dataset.
 
-#### Methodology to Formulate Sound Indices and Habitat Quality Measures
+## Methodology 
+Approach used to formulate sound indices and habitat quality measures:
 
--- Wildlife Acoustic SM4 sound recorders were installed during June and July of 2019 and programmed to extract audio samples from 4 AM-6 AM for five days. A total of eleven sites were sampled, including 10 samples in Mass Audubon sites throughout central Massacchusetts (MA), and one sample in Leadmine Mountain forest in Sturbridge (MA).  
--- From these soundscapes, the Normalized Difference Soundscape Index, (NDSI), Biophony (sounds from biodiversity),  Anthrophony (sounds from humans), Bioacoustics Index (BI), Acoustic Complexity Index (ACI),  Acoustic Diversity Index (ADI), and Acoustic Evenness Index (AEI) were calculated. The relationship between these indices and habitat quality measures were extracted. 
--- Habitat quality components were identified as the vegetation productivity, measured as the normalized difference vegetation index (NDVI), built-up magnitude, measured as the normalized difference-built index NDBI, and traffic influence, measured as distance from primary, secondary, and tertiary roads. 
--- NDVI and NDBI were calculated using Sentinel-2 imagery from Google Earth Engine. Relationships of NDBI and NDBI were extracted at multiple distance buffers from recoding sites to evaluate the scale at which these habitat quality measures had the highest influence on biodiversity. 
+- Wildlife Acoustic SM4 sound recorders were installed during June and July of 2019 and programmed to extract audio samples from 4 AM-6 AM for five days. A total of eleven sites were sampled, including 10 samples in Mass Audubon sites throughout central Massacchusetts (MA), and one sample in Leadmine Mountain forest in Sturbridge (MA).  
+- From these soundscapes, the Normalized Difference Soundscape Index, (NDSI), Biophony (sounds from biodiversity),  Anthrophony (sounds from humans), Bioacoustics Index (BI), Acoustic Complexity Index (ACI),  Acoustic Diversity Index (ADI), and Acoustic Evenness Index (AEI) were calculated. The relationship between these indices and habitat quality measures were extracted. 
+- Habitat quality components were identified as the vegetation productivity, measured as the normalized difference vegetation index (NDVI), built-up magnitude, measured as the normalized difference-built index NDBI, and traffic influence, measured as distance from primary, secondary, and tertiary roads. 
+- NDVI and NDBI were calculated using Sentinel-2 imagery from Google Earth Engine. Relationships of NDBI and NDBI were extracted at multiple distance buffers from recoding sites to evaluate the scale at which these habitat quality measures had the highest influence on biodiversity. 
 
-#### R Packages Utilized for the Methodology
+### R Packages Utilized
 
 The `soundecology`, `tuneR`, and `seewave` packages were utilized in order to read in the sound files and analyze the sound frequencies by Biophony and Anthrophony.  Sound indices were calculated from these frequencies using fuctions within the package to formulate the NDSI, BI, ACI, ADI, and AEI indices for the +1200 records for the 11 sites. The `tidyverse` library was loaded in order for us to clean and "tidy" the data into clean csvs. The csvs were then exported and then re-read back in and converted into a singular dataframe organized by site. Linear models were then created to examine each sound index --in addition to anthrophony & biophony-- vs the NDVI and NDBI results by buffer 500-3000 meters. The linear r squared values were extracted from each of the linear models and compiled into a dataframe organized by buffer size. The r^2 values were then plotted out as "Sound Indices r^2 values vs NDVI by Buffer" and "Sound Indices r^2 values vs NDBI by Buffer". 
 
@@ -75,34 +78,29 @@ The following variables will be analyzed against the obtained NDSI vs NDVI & NDB
 - connectedness 
 - vegetative structure
 
-
-
-### Code: A bullet point summary of the analysis and coding approach that you propose to follow. For teams, this section should include a description of which member will be responsible for each bullet point.
-
-
-
-### Timelines: Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
+# Timelines 
+Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
 
 * 4/13 -- Both--Draft of Vignette submitted to Github, send screenshots of code to Estes
 * 4/15 -- Gabo-- Downloads Repo and is able to make commits remotely, 
 * 4/17 -- Miles-- Complete linear correlation between variables and Acoustic indices at multiple buffers -- to identify the scale of influence
-* More specifically: 
-Complete Obtaining values for variables of interest at buffer sizes 500-3000
-- Imperviousness
-- connectedness 
-- vegetative structure
-Run Linear correlations and R^2 analyses between variables and acoustic indices 
-Identify peaks 
+  - More specifically: 
+    - Complete Obtaining values for variables of interest at buffer sizes 500-3000
+    - Imperviousness
+    - connectedness 
+    - vegetative structure
+    - Run Linear correlations and R^2 analyses between variables and acoustic indices 
+    - Identify peaks 
 
 
 
-Refine code and results 
+Refine code and results
+
 * 4/22 -- Gabo-- Prepare to run Random Forest Regression
 * 4/27 -- BOTH-- Interpret results and clean up code 
 
-
-
-## Anticipated outcomes: Briefly describe, as bullet points, the outcomes you expect for each of your primary project objectives
+# Anticipated outcomes 
+Briefly describe, as bullet points, the outcomes you expect for each of your primary project objectives
 
 - Random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
  --- Variables  oncluded in the random forest model: 
