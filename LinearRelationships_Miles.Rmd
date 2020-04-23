@@ -66,7 +66,12 @@ DF <- read.csv("DF_Fulltable_CBIND.csv")
 DF_transposed <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
 
 
-my_metric3 <- pivot_wider(DF_transposed, names_from = Buffer, values_from = NDSI_select)
+DF_Transposed_NDSI <- pivot_wider(DF_transposed, names_from = Buffer, values_from = NDSI_select)
+
+pivot_longer(-religion, names_to = "Buffer", values_to = "Imperv")
+
+
+# write.csv(DF_Transposed_NDSI, file = "DF_Transposed_NDSI.csv")
 # my_metric3
 # 
 ```
@@ -441,6 +446,16 @@ buffs_extract_zonal_Impervious <- buffs_extract_zonal_Impervious %>% mutate(Site
 
 
 
+buffs_extract_zonal_Impervious_pivotted <- buffs_extract_zonal_Impervious %>% pivot_longer(-SiteName, names_to = "Buffer", values_to = "Imperv") %>% arrange(SiteName)
+
+#%>%  mutate(NDSI = DF_transposed$NDSI_select) 
+
+
+# write.csv(buffs_extract_zonal_Impervious, file = "buffs_extract_zonal_Impervious.csv")
+
+
+
+
 #Extract the mean value from the Connectedness tif file for each buffer zone
 
 set.seed(1)
@@ -455,6 +470,13 @@ buffs_extract_zonal_connect <- as.data.frame(buffs_extract_zonal_connect)
 
 buffs_extract_zonal_connect <- buffs_extract_zonal_connect %>% mutate(SiteName = sample_points_f$Site) %>% rename("Buffer 500 (m)" = V1,  "Buffer 1000 (m)" = V2, "Buffer 1500 (m)" = V3, "Buffer 2000 (m)" = V4, "Buffer 2500 (m)" = V5, "Buffer 3000 (m)" = V6) %>% dplyr::select(SiteName, everything())
 
+buffs_extract_zonal_connect_pivoted <- buffs_extract_zonal_connect %>% pivot_longer(-SiteName, names_to = "Buffer", values_to = "Connectedness") %>% arrange(SiteName) 
+
+
+
+# write.csv(buffs_extract_zonal_connect, file = "buffs_extract_zonal_connect.csv")
+
+
 
 #Extract the mean value from the Structure tif file for each buffer zone
 
@@ -468,6 +490,31 @@ buffs_extract_zonal_structure <- as.data.frame(buffs_extract_zonal_structure)
 #Create new field called 'SiteName' using the site names from sample_points_f$Site
 
 buffs_extract_zonal_structure <- buffs_extract_zonal_structure %>% mutate(SiteName = sample_points_f$Site) %>% rename("Buffer 500 (m)" = V1,  "Buffer 1000 (m)" = V2, "Buffer 1500 (m)" = V3, "Buffer 2000 (m)" = V4, "Buffer 2500 (m)" = V5, "Buffer 3000 (m)" = V6) %>% dplyr::select(SiteName, everything())
+
+
+buffs_extract_zonal_structure_pivoted <- buffs_extract_zonal_structure %>% pivot_longer(-SiteName, names_to = "Buffer", values_to = "Structure") %>% arrange(SiteName) 
+
+
+
+# write.csv(buffs_extract_zonal_structure, file = "buffs_extract_zonal_structure.csv")
+
+
+
+
+
+#----------------------------------------------------------------------------------------------------------
+
+
+#Creating the final table
+
+
+
+
+Imperv_connect_Struct_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, NDSI = DF_transposed$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
+
+
+write.csv(Imperv_connect_Struct_NDSI, file = "Imperv_connect_Struct_NDSI.csv")
+
 
 
 # ex <- extract(x = imperv_cropped, y = samp_matrix, method='simple', buffer= c(500, 1000, 1500, 2000, 2500, 3000), small=FALSE, cellnumbers=FALSE, fun=mean, na.rm=TRUE, df=TRUE)
@@ -576,6 +623,237 @@ plot(buffs_extract[[1]]$sites, pch = 1, col = NA)
 
 
 ```
+
+## Code to create linear correlations between NDSI and IMperviousness, connectedness, and structure
+
+```{r}
+#NDSI vs Impervious
+lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+NDSI_Imperv_lm <- summary(lm_NDSI_Imperv)$r.squared
+
+lm_NDSI_Imperv
+NDSI_Imperv_lm
+
+cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Imperv)
+
+# #Obtain numbers for NDVI at Buffer 2000
+# cor_2000_NDVI <- lm_NDSI_NDVI[["2000"]][["model"]][["MEAN_NDVI"]]
+# cor_2000_NDSI <- lm_NDSI_NDVI[["2000"]][["model"]][["NDSI_select"]]
+# 
+# cor(x = cor_2000_NDSI, y = cor_2000_NDVI)
+
+
+#NDSI vs Connectedness
+
+lm_NDSI_Connect <- lmList(NDSI ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+NDSI_Connect_lm <-summary(lm_NDSI_Connect)$r.squared
+
+cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Connectdness)
+
+
+# #Obtain numbers for NDBI at Buffer 2000
+# cor_2000_NDBI <- lm_NDSI_NDBI[["2000"]][["model"]][["MEAN_NDBI"]]
+# cor(x = cor_2000_NDSI, y = cor_2000_NDBI)
+
+
+##NDSI vs Structuredness
+
+lm_NDSI_Structure <- lmList(NDSI ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+NDSI_Structure_lm <-summary(lm_NDSI_Structure)$r.squared
+
+cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Structure)
+```
+
+
+
+
+
+## Code to create linear correlations between ANT and IMperviousness, connectedness, and Structure
+
+
+```{r}
+#Anthrophony vs Impervious
+lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+ANT_Imperv_lm <- summary(lm_ANT_Imperv)$r.squared
+
+lm_NDSI_Imperv
+NDSI_Imperv_lm
+
+cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Imperv)
+
+# #Obtain numbers for NDVI at Buffer 2000
+# cor_2000_NDVI <- lm_NDSI_NDVI[["2000"]][["model"]][["MEAN_NDVI"]]
+# cor_2000_NDSI <- lm_NDSI_NDVI[["2000"]][["model"]][["NDSI_select"]]
+# 
+# cor(x = cor_2000_NDSI, y = cor_2000_NDVI)
+
+
+#NDSI vs Connectedness
+
+lm_ANT_Connect <- lmList(Anthrophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+ANT_Connect_lm <-summary(lm_ANT_Connect)$r.squared
+
+cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Connectdness)
+
+
+# #Obtain numbers for NDBI at Buffer 2000
+# cor_2000_NDBI <- lm_NDSI_NDBI[["2000"]][["model"]][["MEAN_NDBI"]]
+# cor(x = cor_2000_NDSI, y = cor_2000_NDBI)
+
+
+##NDSI vs Structuredness
+
+lm_ANT_Structure <- lmList(Anthrophony ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+ANT_Structure_lm <-summary(lm_ANT_Structure)$r.squared
+
+cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Structure)
+```
+
+
+## Code to create linear correlations between BIO and IMperviousness, connectedness, and structure
+
+```{r}
+#Biophony vs Impervious
+lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+BIO_Imperv_lm <- summary(lm_BIO_Imperv)$r.squared
+
+lm_BIO_Imperv
+BIO_Imperv_lm
+
+cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Imperv)
+
+# #Obtain numbers for NDVI at Buffer 2000
+# cor_2000_NDVI <- lm_NDSI_NDVI[["2000"]][["model"]][["MEAN_NDVI"]]
+# cor_2000_NDSI <- lm_NDSI_NDVI[["2000"]][["model"]][["NDSI_select"]]
+# 
+# cor(x = cor_2000_NDSI, y = cor_2000_NDVI)
+
+
+#NDSI vs Connectedness
+
+lm_BIO_Connect <- lmList(Biophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+BIO_Connect_lm <-summary(lm_BIO_Connect)$r.squared
+
+cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Connectdness)
+
+
+# #Obtain numbers for NDBI at Buffer 2000
+# cor_2000_NDBI <- lm_NDSI_NDBI[["2000"]][["model"]][["MEAN_NDBI"]]
+# cor(x = cor_2000_NDSI, y = cor_2000_NDBI)
+
+
+##NDSI vs Structuredness
+
+lm_BIO_Structure <- lmList(Biophony ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+BIO_Structure_lm <-summary(lm_BIO_Structure)$r.squared
+
+cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Structure)
+```
+
+
+
+
+
+Code to create linear r squared dataframe from the rsquared summaries above
+
+```{r}
+# as. Buffer <- Imperv_connect_Struct_NDSI$Buffer
+
+Buffer <- c(500, 1000,1500,2000,2500,3000)
+
+linear_rsquared <- data.frame(Buffer, NDSI_Imperv_lm, NDSI_Connect_lm, NDSI_Structure_lm, ANT_Imperv_lm, ANT_Connect_lm, ANT_Structure_lm, BIO_Imperv_lm, BIO_Connect_lm, BIO_Structure_lm )
+
+
+
+# write.csv(linear_rsquared, file = "linear_rsquared.csv")
+
+
+#-------------------------------------------------------------------------------------------------------------------------
+#Graphs
+
+
+#graph of R^2 for NDSI
+
+
+RSquaredPlot_NDSI <- ggplot(data = linear_rsquared) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Imperv_lm, color = 'Imperv')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Structure_lm, color = 'Structure')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Connect_lm, color = 'Connect')) + scale_x_log10() + 
+  labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
+
+plot(RSquaredPlot_NDSI)
+ggplotly(RSquaredPlot_NDSI)
+
+
+
+
+#graph of R^2 for ANT
+
+
+RSquaredPlot_ANT <- ggplot(data = linear_rsquared) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Imperv_lm, color = 'Imperv')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Structure_lm, color = 'Structure')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Connect_lm, color = 'Connect')) + scale_x_log10() + 
+  labs(title = "Mean ANT ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
+
+plot(RSquaredPlot_ANT)
+ggplotly(RSquaredPlot_ANT)
+
+
+
+
+#graph of R^2 for BIO
+
+
+RSquaredPlot_Bio <- ggplot(data = linear_rsquared) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Imperv_lm, color = 'Imperv')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Structure_lm, color = 'Structure')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Connect_lm, color = 'Connect')) + scale_x_log10() + 
+  labs(title = "Mean BIO ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
+
+plot(RSquaredPlot_Bio)
+ggplotly(RSquaredPlot_Bio)
+
+
+```
+
+
+
+## Code to create linear correlations between NDSI and Imperviousness, connectedness, and structure
+```{r}
+#NDSI vs Impervious
+lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared
+
+lm_NDSI_NDVI
+NDSI_NDVI_lm
+
+cor(x = DF$NDSI_select, y = DF$MEAN_NDVI)
+
+```
+
+
+
+## Code to create linear correlations between NDSI and connectedness, and structure
+```{r}
+#NDSI vs Impervious
+lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared
+
+lm_NDSI_NDVI
+NDSI_NDVI_lm
+
+cor(x = DF$NDSI_select, y = DF$MEAN_NDVI)
+
+```
+
+
+
+
+
+
+
+
 
 
 
