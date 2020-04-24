@@ -195,6 +195,76 @@ masscounties <- st_transform(x = masscounties, crs = st_crs(sample_points_f))
 
 
 
+The parameterized model is run on the input layers using the CAPS software, written at UMass
+by Brad Compton and Eduard Ene. This software produces an output grid for each metric.
+Metrics fall into two groups: stressor metrics (such as road traffic, invasive plants, or nutrient
+enrichment), and resiliency metrics (similarity, connectedness, and aquatic connectedness).
+
+Stressor metrics measure anthropogenic stressors that reduce the integrity of a site, while
+resiliency metrics measure the intrinsic ability of a site to maintain its ecological integrity,
+despite the impact of anthropogenic stressors. 
+
+Resiliency metrics, in reflecting the currentlandscape, do take into account anthropogenic stressors such as road traffic and impervious surfaces. The three resiliency metrics are based on the ecological distance among cells
+computed using the ecological settings variables described in Appendix D.
+
+Scaling.  Scaled metrics and IEI are scaled from 0-1; in geoTIFFs, these grids are expressed in terms of percent (scaled 0-100).  Raw metrics and settings grids are scaled in original units, unique to each grid; in geoTIFFs, these grids are scaled from 0-255.  The CAPS final landcover, capsland, represents landcover classes using integer classes (see Appendix H).  GeoTIFF versions are already colored appropriately; legends files for QGIS, ArcView 3.3, and ArcMap are supplied for the Arc grid.
+
+ 
+
+The coordinate reference system for all data is Massachusetts mainland State Plane, NAD83.
+
+
+Hydrological alterations
+
+Imperviousness imperv Measures the intensity of impervious surface in the
+watershed above the focal cell, based on imperviousness
+and the modeled “influence value” for each cell, which is
+the aquatic distance from the focal cell based on a timeof-flow model.
+Data source: landcover, streams, flow direction,
+watershed resistance, percent imperviousness
+
+
+Integrity Metrics
+
+Connectedness connect Measures the disruption of habitat connectivity caused by
+all forms of development between each focal cell and
+surrounding cells as well as the “resistance” of the
+surrounding undeveloped landscape, as well as the
+similarity of surroundings. A hypothetical organism in a
+highly connected cell can reach a large area of ecologically
+similar cells with minimal crossing of “hostile” cells. This
+metric uses a least-cost path algorithm to determine the
+area that can reach each focal cell, incorporating each
+cell’s similarity to the focal cell.
+Data source: landcover, ecological settings variables
+
+
+
+
+Hydrological alterations
+
+Imperviousness
+
+      raw: http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/imperv.zip
+
+Resiliency Metrics
+
+Connectedness
+
+      raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/connect.zip
+      
+Vegetation
+
+Vegetative structure
+
+        http://jamba.provost.ads.umass.edu/web/caps2011/tiffzips/settings/structure.zip
+      
+Development & roads
+
+Road traffic
+
+      raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/traffic.zip
+
 
 
 ```{r}
@@ -249,6 +319,32 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 
+
+
+# #Road traffic traffic Measures the intensity of road traffic (based on measured road traffic rates) in the neighborhood surrounding the focal cell, based on a logistic function of distance.
+# Data source: landcover, traffic rates
+
+
+
+#import connectedness raster file
+traffic <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
+plot(traffic)
+plot(sample_points_f, col = "green", add = TRUE)
+plot(AOI, add = TRUE)
+st_crs(traffic)
+
+
+#Crop connect to AOI and plot
+traffic_cropped <- crop(traffic, y = AOI)
+plot(traffic_cropped)
+plot(sample_points_f, col = "green", add = TRUE)
+
+
+
+
+
+
+
 ###Example plot of data
 
 par(mar = c(0, 0, 1, 0) + .1)
@@ -287,13 +383,12 @@ samp_matrix <- matrix(data = samp_matrix, ncol = 2, byrow = TRUE)
 calculate landscape metrics on many different buffer sizes at the same time.
 You just need to select what sizes you are interested in and use the sample_lsm() function inside a map_dfr() function.
 ```{r}
-
-
-# creating buffers of 3000 and 6000 meters 
-sizes = c(500, 1000, 1500, 2000, 2500, 3000)
-
-# calculating shdi (landscape metric) for each buffer for imperv_cropped
-imperv_cropped_buffs <- sizes %>% set_names() %>% purrr::map_dfr(~sample_lsm(imperv_cropped, points = sample_points_f, what = "lsm_l_shdi", size = .), .id = "buffer")
+# 
+# # creating buffers of 3000 and 6000 meters 
+# sizes = c(500, 1000, 1500, 2000, 2500, 3000)
+# 
+# # calculating shdi (landscape metric) for each buffer for imperv_cropped
+# imperv_cropped_buffs <- sizes %>% set_names() %>% purrr::map_dfr(~sample_lsm(imperv_cropped, points = sample_points_f, what = "lsm_l_shdi", size = .), .id = "buffer")
 ```
 
 
@@ -334,6 +429,11 @@ metric_struct
 metric_connect <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
 
 metric_connect
+
+
+metric_traffic <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+
+metric_traffic
 
 
 #Drop rows with NA in the values field
@@ -388,18 +488,33 @@ metric_imperv_core
 
 plot(imperv_cropped)
 
-show_patches(imperv_cropped)
+# show_patches(imperv_cropped)
 
 
 
-metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+metric_struct_core <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
 
-metric_struct
+metric_struct_core
+
+plot(structure_cropped)
 
 
-metric_connect <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
 
-metric_connect
+metric_connect_core <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+
+metric_connect_core
+
+plot(connect_cropped)
+
+
+
+metric_traffic_core <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+
+metric_traffic_core
+
+plot(traffic_cropped)
+
+
 
 ```
 
@@ -501,20 +616,47 @@ buffs_extract_zonal_structure_pivoted <- buffs_extract_zonal_structure %>% pivot
 
 
 
+#Extract the mean value from the traffic tif file for each buffer zone
+
+
+set.seed(1)
+buffs_extract_zonal_traffic <- sapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
+zonal <- extract(traffic_cropped, sample_points_f, fun= mean, buffer = x, na.rm=TRUE)
+})
+buffs_extract_zonal_traffic <- as.data.frame(buffs_extract_zonal_traffic)
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site
+
+buffs_extract_zonal_traffic <- buffs_extract_zonal_traffic %>% mutate(SiteName = sample_points_f$Site) %>% rename("Buffer 500 (m)" = V1,  "Buffer 1000 (m)" = V2, "Buffer 1500 (m)" = V3, "Buffer 2000 (m)" = V4, "Buffer 2500 (m)" = V5, "Buffer 3000 (m)" = V6) %>% dplyr::select(SiteName, everything())
+
+
+buffs_extract_zonal_traffic_pivoted <- buffs_extract_zonal_traffic %>% pivot_longer(-SiteName, names_to = "Buffer", values_to = "Traffic") %>% arrange(SiteName) 
+
+
+
+
+
 
 #----------------------------------------------------------------------------------------------------------
 
 
-#Creating the final table
-
-
-
+#Creating the table with Imperv, Connect, Structure, NDSI, Anthrophony, and Biophony
 
 Imperv_connect_Struct_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, NDSI = DF_transposed$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
 
 
 write.csv(Imperv_connect_Struct_NDSI, file = "Imperv_connect_Struct_NDSI.csv")
 
+
+
+#Creating the table with Imperv, Connect, Structure, Traffic, NDSI, Anthrophony, and Biophony
+
+
+Imperv_connect_Struct_Traffic_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, Traffic = buffs_extract_zonal_traffic_pivoted$Traffic, NDSI = DF_transposed$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
+
+
+
+write.csv(Imperv_connect_Struct_Traffic_NDSI, file = "Imperv_connect_Struct_Traffic_NDSI.csv")
 
 
 # ex <- extract(x = imperv_cropped, y = samp_matrix, method='simple', buffer= c(500, 1000, 1500, 2000, 2500, 3000), small=FALSE, cellnumbers=FALSE, fun=mean, na.rm=TRUE, df=TRUE)
@@ -662,6 +804,15 @@ lm_NDSI_Structure <- lmList(NDSI ~ Structure | Buffer, data = Imperv_connect_Str
 NDSI_Structure_lm <-summary(lm_NDSI_Structure)$r.squared
 
 cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Structure)
+
+
+
+##NDSI vs Traffic
+
+lm_NDSI_Traffic <- lmList(NDSI ~ Traffic | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
+NDSI_Traffic_lm <-summary(lm_NDSI_Traffic)$r.squared
+
+cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traffic_NDSI$Traffic)
 ```
 
 
@@ -688,7 +839,7 @@ cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$I
 # cor(x = cor_2000_NDSI, y = cor_2000_NDVI)
 
 
-#NDSI vs Connectedness
+#Anthrophony vs Connectedness
 
 lm_ANT_Connect <- lmList(Anthrophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 ANT_Connect_lm <-summary(lm_ANT_Connect)$r.squared
@@ -701,12 +852,20 @@ cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$C
 # cor(x = cor_2000_NDSI, y = cor_2000_NDBI)
 
 
-##NDSI vs Structuredness
+##Anthrophony vs Structuredness
 
 lm_ANT_Structure <- lmList(Anthrophony ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 ANT_Structure_lm <-summary(lm_ANT_Structure)$r.squared
 
 cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Structure)
+
+
+##Anthrophony vs Traffic
+
+lm_ANT_Traffic <- lmList(Anthrophony ~ Traffic | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
+ANT_Traffic_lm <-summary(lm_ANT_Traffic)$r.squared
+
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony, y = Imperv_connect_Struct_Traffic_NDSI$Traffic)
 ```
 
 
@@ -714,6 +873,7 @@ cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$S
 
 ```{r}
 #Biophony vs Impervious
+
 lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 BIO_Imperv_lm <- summary(lm_BIO_Imperv)$r.squared
 
@@ -729,7 +889,7 @@ cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Impe
 # cor(x = cor_2000_NDSI, y = cor_2000_NDVI)
 
 
-#NDSI vs Connectedness
+#Biophony vs Connectedness
 
 lm_BIO_Connect <- lmList(Biophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 BIO_Connect_lm <-summary(lm_BIO_Connect)$r.squared
@@ -742,12 +902,21 @@ cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Conn
 # cor(x = cor_2000_NDSI, y = cor_2000_NDBI)
 
 
-##NDSI vs Structuredness
+##Biophony vs Structuredness
 
 lm_BIO_Structure <- lmList(Biophony ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 BIO_Structure_lm <-summary(lm_BIO_Structure)$r.squared
 
 cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Structure)
+
+
+
+##Biophony vs Traffic
+
+lm_BIO_Traffic <- lmList(Biophony ~ Traffic | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
+BIO_Traffic_lm <-summary(lm_BIO_Traffic)$r.squared
+
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony, y = Imperv_connect_Struct_Traffic_NDSI$Traffic)
 ```
 
 
@@ -761,11 +930,11 @@ Code to create linear r squared dataframe from the rsquared summaries above
 
 Buffer <- c(500, 1000,1500,2000,2500,3000)
 
-linear_rsquared <- data.frame(Buffer, NDSI_Imperv_lm, NDSI_Connect_lm, NDSI_Structure_lm, ANT_Imperv_lm, ANT_Connect_lm, ANT_Structure_lm, BIO_Imperv_lm, BIO_Connect_lm, BIO_Structure_lm )
+linear_rsquared <- data.frame(Buffer, NDSI_Imperv_lm, NDSI_Connect_lm, NDSI_Structure_lm, NDSI_Traffic_lm, ANT_Imperv_lm, ANT_Connect_lm, ANT_Structure_lm, ANT_Traffic_lm, BIO_Imperv_lm, BIO_Connect_lm, BIO_Structure_lm, BIO_Traffic_lm)
 
 
 
-# write.csv(linear_rsquared, file = "linear_rsquared.csv")
+write.csv(linear_rsquared, file = "linear_rsquared_traffic_included.csv")
 
 
 #-------------------------------------------------------------------------------------------------------------------------
@@ -778,7 +947,8 @@ linear_rsquared <- data.frame(Buffer, NDSI_Imperv_lm, NDSI_Connect_lm, NDSI_Stru
 RSquaredPlot_NDSI <- ggplot(data = linear_rsquared) +
   geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Imperv_lm, color = 'Imperv')) +
   geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Structure_lm, color = 'Structure')) +
-  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Connect_lm, color = 'Connect')) + scale_x_log10() + 
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Connect_lm, color = 'Connect')) +
+ geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$NDSI_Traffic_lm, color = 'Traffic')) + scale_x_log10() + 
   labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
 
 plot(RSquaredPlot_NDSI)
@@ -793,7 +963,8 @@ ggplotly(RSquaredPlot_NDSI)
 RSquaredPlot_ANT <- ggplot(data = linear_rsquared) +
   geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Imperv_lm, color = 'Imperv')) +
   geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Structure_lm, color = 'Structure')) +
-  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Connect_lm, color = 'Connect')) + scale_x_log10() + 
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Connect_lm, color = 'Connect')) +
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$ANT_Traffic_lm, color = 'Traffic')) + scale_x_log10() + 
   labs(title = "Mean ANT ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
 
 plot(RSquaredPlot_ANT)
@@ -808,7 +979,8 @@ ggplotly(RSquaredPlot_ANT)
 RSquaredPlot_Bio <- ggplot(data = linear_rsquared) +
   geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Imperv_lm, color = 'Imperv')) +
   geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Structure_lm, color = 'Structure')) +
-  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Connect_lm, color = 'Connect')) + scale_x_log10() + 
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Connect_lm, color = 'Connect')) + 
+  geom_line(aes(x = linear_rsquared$Buffer, y = linear_rsquared$BIO_Traffic_lm, color = 'Traffic')) + scale_x_log10() + 
   labs(title = "Mean BIO ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
 
 plot(RSquaredPlot_Bio)
