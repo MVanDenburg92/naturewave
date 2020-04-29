@@ -368,7 +368,7 @@ traffic_cropped <- crop(traffic, y = AOI)
 plot(traffic_cropped)
 plot(sample_points_f, col = "green", add = TRUE)
 
-
+plot(imperv_cropped)
 
 
 
@@ -475,7 +475,7 @@ imperv_cropped__focal <- focal(imperv_cropped, w = fw_sum, na.rm = TRUE)
 plot(imperv_cropped, main ="Input Raster") 
 #plot result of circular moving window
 plot(imperv_cropped__focal, main ="Circular MW Mean Using Spatial Weight, No Mean Function")
-plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unficed") 
+plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unfixed") 
 
 
 
@@ -503,14 +503,11 @@ imperv_cropped__focal_sum <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, 
 
 
 # plot(imperv_cropped__focal, main="Circular MW SUM")
-plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unficed") 
+plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unfixed") 
 plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")
 plot(imperv_cropped__focal, main ="Circular MW correct without specifying `fun = mean`")
 plot(imperv_cropped, main ="Input Raster") #plot original
-plot(imperv_cropped__focal_sum, main ="Circular MW correct without ")
-
-
-plot(imperv_cropped)
+plot(imperv_cropped__focal_sum, main ="Circular MW correct sum only ")
 
 
 ```
@@ -526,10 +523,6 @@ of the cells of a Raster* object that are covered by a polygon. A cell is covere
 the polygon (but see the weights option for considering partly covered cells; and argument small
 for getting values for small polygons).
 It is also possible to extract values for point locations from SpatialPolygons.
-
-
-
-
 
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
@@ -643,30 +636,26 @@ buffs_extract_zonal_traffic <- buffs_extract_zonal_traffic %>% mutate(SiteName =
 buffs_extract_zonal_traffic_pivoted <- buffs_extract_zonal_traffic %>% pivot_longer(-SiteName, names_to = "Buffer", values_to = "Traffic") %>% arrange(SiteName) 
 
 
-
-
-
-
 #----------------------------------------------------------------------------------------------------------
 
 
 #Creating the table with Imperv, Connect, Structure, NDSI, Anthrophony, and Biophony
 
-Imperv_connect_Struct_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, NDSI = DF_transposed$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
+Imperv_connect_Struct_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, NDSI = DF$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
 
 
-write.csv(Imperv_connect_Struct_NDSI, file = "Imperv_connect_Struct_NDSI.csv")
+write.csv(Imperv_connect_Struct_NDSI, file = "Imperv_connect_Struct_NDSI_copy.csv")
 
 
 
 #Creating the table with Imperv, Connect, Structure, Traffic, NDSI, Anthrophony, and Biophony
 
 
-Imperv_connect_Struct_Traffic_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, Traffic = buffs_extract_zonal_traffic_pivoted$Traffic, NDSI = DF_transposed$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
+Imperv_connect_Struct_Traffic_NDSI <- buffs_extract_zonal_Impervious_pivotted %>% mutate(Connectdness = buffs_extract_zonal_connect_pivoted$Connectedness, Structure  = buffs_extract_zonal_structure_pivoted$Structure, Traffic = buffs_extract_zonal_traffic_pivoted$Traffic, NDSI = DF$NDSI_select, Biophony = DF$BIO_select, Anthrophony = DF$ANT_select) %>% arrange(SiteName)
 
 
 
-write.csv(Imperv_connect_Struct_Traffic_NDSI, file = "Imperv_connect_Struct_Traffic_NDSI.csv")
+write.csv(Imperv_connect_Struct_Traffic_NDSI, file = "Imperv_connect_Struct_Traffic_NDSI_copy.csv")
 
 
 # ex <- extract(x = imperv_cropped, y = samp_matrix, method='simple', buffer= c(500, 1000, 1500, 2000, 2500, 3000), small=FALSE, cellnumbers=FALSE, fun=mean, na.rm=TRUE, df=TRUE)
@@ -753,24 +742,16 @@ buff500_ninthsite <- buffs_extract[[1]]$sites %>% slice(9)
 
 
 
-
-
-
-
-plot(imperv_cropped__focal_mean, main ="Circular MW Mean with function speficied")
+plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied")
 plot(imperv_cropped__focal, main ="Circular MW correct without ")
 
 #plot out cropped imperv values with selected outlier values
 plot(imperv_cropped, ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
-plot(imperv_cropped__focal_mean, main ="Circular MW Mean with function speficied", ext = extent(buff500_firstsite))
+plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 plot(imperv_cropped__focal, main ="Circular MW correct without", ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
-
-
-
-
 
 
 #Crop imperv_cropped to the first buffer site
@@ -786,9 +767,6 @@ buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
 # chirps1_dist72 <- crop(x = chirpsz[[1]], y = districts %>% slice(72))
-
-
-
 
 
 
