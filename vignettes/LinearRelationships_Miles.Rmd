@@ -26,9 +26,8 @@ References:
 #https://r-spatialecology.github.io/landscapemetrics/articles/articles/guide_sample_lsm.html#extract-landscape-metrics-at-sample-points
 #https://r-spatialecology.github.io/landscapemetrics/reference/sample_lsm.html#details
 
-
-```{r setup, include=FALSE }
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "~/external/data/")
 ```
 
 
@@ -68,28 +67,34 @@ Brings in the CSVS with the buffer as a dataframe  and runs a quick test to sele
 
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
-# setwd("~/Spatial_Analysis_R/naturewave/ExtData/")
+# setwd("~/Spatial_Analysis_R/naturewave/external/")
 
 
 # 
-# setwd("~/Spatial_Analysis_R/naturewave/extdata/")
+# setwd("~/Spatial_Analysis_R/naturewave/external/")
 # 
-# read_csv(system.file("naturewave/extdata/DF_Fulltable_CBIND.csv", 
+# read_csv(system.file("naturewave/external/DF_Fulltable_CBIND.csv", 
 #                                 package = "naturewave"))
 getwd()
 
-setwd("../naturewave/extdata/data/")
-DF <- read.csv("DF_Fulltable_CBIND.csv")
+path(./external/data, ext = "csv")
 
-# DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
 
+setwd(dir = "/external/data/")
+DF <- read.csv("external/data/DF_Fulltable_CBIND.csv")
+
+dem <- getData(name = "DF_Fulltable_CBIND", path = "./external/data")
+
+# DF <- read.csv("./external/DF_Fulltable_CBIND.csv")
+
+documentation?
 
 
 # DF<- read.csv("ALL_INDICES.csv")
 
 #Your Choice whether to read in the data from a csv or use the made datafram
 
-# DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
+# DF <- read.csv("./external/DF_Fulltable_CBIND.csv")
 
 
 DF_NDSI <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
@@ -117,7 +122,7 @@ Think about RGEE and how it could be used
 # sample_points_f <- st_read("sample_sites_projected.shp")
 
 
-setwd("../naturewave/extdata/data/sample_sites/")
+setwd("../naturewave/external/data/sample_sites/")
 sample_points_f <- st_read("sample_sites_projected.shp")
 
 sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
@@ -136,7 +141,7 @@ st_crs(sample_points_f)
 
 # ##import Shapefile for the sites of interest projeccted into albers equal area
 # getwd()
-# setwd("../naturewave/extdata/sample_sites/")
+# setwd("../naturewave/external/sample_sites/")
 # sample_points_Albers <- st_read("sample_sites_projected_albers.shp")
 # 
 # sample_points_Albers
@@ -166,7 +171,7 @@ st_crs(sample_points_f)
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 # Import AOI shapefile containing site
 
-setwd("../naturewave/extdata/data/sample_sites/")
+setwd("../naturewave/external/data/sample_sites/")
 AOI <- st_read("AOI.shp")
 AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 
@@ -177,20 +182,9 @@ pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.6970
 
 
 #import counties for US
-massmap <- map('county', 'Massachusetts') # county map of Massachusetts
-
-
+# county map of Massachusetts
 
 counties <- st_as_sf(map(database = "county", plot = FALSE, fill = TRUE)) %>% lwgeom::st_make_valid()
-
-
-plot(counties[, "ID"], border = "transparent")
-counties %>% filter(grepl("worcester", ID, ignore.case = TRUE))
-
-
-# mutate(county = gsub(",.*", "", Province.State), state = gsub(".*, ", "", Province.State)) %>%
-# group_by(state, county)
-
 
 #add in state and county fields using data from ID column 
 counties <- counties %>% mutate(state = gsub(",.*", "", ID)) %>% mutate(county = gsub(".*,", "", ID))
@@ -199,23 +193,18 @@ massmaps <- counties %>% filter(grepl("massachusetts", state, ignore.case = TRUE
 #plot(massmaps,border = "transparent")
 #or masscounties %>% plot(.,border = "transparent")
 
-
-massstate <- massmaps[, "state"] 
-#plot(massmaps[, "state"],border = "transparent")
-
 masscounties <- massmaps[, "county"] 
-plot(massmaps[, "county"],border = "transparent")
 
 str(masscounties)
 st_crs(masscounties)
 
 masscounties <- st_transform(x = masscounties, crs = st_crs(sample_points_f))
 
-
+ma_crop <- masscounties %>% st_transform(crs = st_crs(sample_points_f)) %>% st_crop(., AOI)
 
 #Plot out AOI on top of massachussets state boundary
 
-
+plot(ma_crop)
 ```
 
 
@@ -306,7 +295,7 @@ Road traffic
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #import immperviousness raster file
-imperv <- raster("../naturewave/extdata/data/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
+imperv <- raster("../naturewave/external/data/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
 plot(imperv)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -321,7 +310,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 #import connectedness raster file
 
-connect <- raster("../naturewave/extdata/data/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
+connect <- raster("../naturewave/external/data/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
 plot(connect)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -335,7 +324,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import structure raster file
-structure <- raster("../naturewave/extdata/data/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
+structure <- raster("../naturewave/external/data/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
 plot(structure)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -356,7 +345,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import connectedness raster file
-traffic <- raster("../naturewave/extdata/data/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
+traffic <- raster("../naturewave/external/data/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
 plot(traffic)
 plot(sample_points_f, col = "green", add = TRUE)
 plot(AOI, add = TRUE)
@@ -759,7 +748,8 @@ buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
 
-plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff3000_secondsite))
+plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied")
+, ext = extent(buff3000_secondsite))
 buffs_extract[[6]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
@@ -798,6 +788,24 @@ plot(buffs_extract[[1]]$sites, pch = 1, col = NA)
 
 
 imperv_cropped
+
+
+
+plot(imperv_cropped)
+
+
+
+# apply crop, mask and rescale to each layer
+lc_crop <- lapply(landcover, function(x) {  # x <- landcover[[1]]
+  r <- crop(x, e)  # crop to box arpund pts
+  r <- mask(r, ma_crop)  # mask out no data areas
+  (r - cellStats(r, min)) / 255
+})
+lc_stack <- stack(lc_crop)  # stack layers
+
+# quick look
+plot(lc_stack[[2]])
+plot(st_geometry(pts), add = TRUE)
 
 ```
 
