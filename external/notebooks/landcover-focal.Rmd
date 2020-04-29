@@ -1,0 +1,102 @@
+---
+title: "Landscape focal"
+author: "Lyndon Estes"
+date: "4/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+An overview of how to do a focal window to get land cover neighborhood statistics around each pixel (to mimic buffering)
+
+## Step 1: Read in, crop, and rescale landcover data
+
+Data are in 0-255.  Predictions probably shouldn't be made to far outside of the range of the extent of the samples, so crop down land cover data first (also makes for less compute)
+```{r, eval=FALSE}
+library(raster)
+library(dplyr)
+library(sf)
+ma <- st_as_sf(maps::map("state", plot = FALSE, fill = TRUE)) %>% 
+  filter(ID == "massachusetts")
+
+
+# read in sample points
+pts <- read_sf("external/data/sample_sites_projected.shp")
+
+# read in landcover data
+f <- dir("external/data", full.names = TRUE, pattern = ".tif")
+landcover <- lapply(unname(f), function(x) {
+  r <- raster(x)
+  crs(r) <- crs(pts)
+  r
+})
+names(landcover) <- gsub(".tif", "", basename(f))
+
+
+# define slightly wider extent than that of the points, and set up mask from 
+# state boundaries of MA to remove 0 value areas outside of state
+e <- extend(extent(pts), 10000, -10000, 0, 0)
+ma_crop <- ma %>% st_transform(crs = st_crs(pts)) %>% st_crop(., e)
+
+# apply crop, mask and rescale to each layer
+lc_crop <- lapply(landcover, function(x) {  # x <- landcover[[1]]
+  r <- crop(x, e)  # crop to box arpund pts
+  r <- mask(r, ma_crop)  # mask out no data areas
+  (r - cellStats(r, min)) / 255
+})
+lc_stack <- stack(lc_crop)  # stack layers
+
+# quick look
+plot(lc_stack[[1]])
+plot(st_geometry(pts), add = TRUE)
+```
+
+## Step 2: run focal mean
+
+Run focal mean, writing out focal results to disk to limit size in memory
+```{r, eval = FALSE}
+# function will give you a weights matrix for the desired neighborhood size, 
+# given width (diam) and resolution of raster (r)
+wmatrix <- function(diam, r) {
+  d <- round(diam / r, 0)  # set window dimensions
+  m <- matrix(nrow = d, ncol = d)  # make matrix
+  m[1:length(m)] <- rep(1 / length(m), length(m))  # populate with weights
+  m
+}
+
+# run focal mean, here for 2000 m
+diam <- 2000  # buffer size (in meters)
+w <- wmatrix(diam, res(landcover_stack)[1])  # weights matrix
+lc2000 <- lapply(1:4, function(x) {  # x <- 1
+  f <- paste0("external/data/", names(landcover_stack)[x], "_", diam, ".tif")
+  r <- focal(landcover_stack[[x]], w, filename = f)
+  return(r)
+})
+lc2000_stack <- stack(lc2000)  # stack
+
+# quick look
+plot(lc2000_stack)
+```
+
+The above is an example for how you can do the focal mean for a 2000 m window. You can repeat the above for different buffer sizes by copying the code and simply changing the `list` and `stack` object names and `diam`.
+
+## Step 3: extract focal values to get predictors for points
+```{r, eval = FALSE}
+library(ggplot2)
+pts <- cbind(pts, extract(lc_stack, pts))  # original lc
+pts <- cbind(pts, extract(lc_2000s, pts))  # buffer points
+
+ggplot(pts) + geom_point(aes(connect, connect_2000)) + 
+  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
+ggplot(pts) + geom_point(aes(imperv, imperv_2000)) + 
+  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
+ggplot(pts) + geom_point(aes(structure, structure_2000)) + 
+  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
+ggplot(pts) + geom_point(aes(traffic, traffic_2000)) + 
+  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
+```
+
+
+
