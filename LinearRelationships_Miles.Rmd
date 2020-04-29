@@ -468,12 +468,15 @@ imperv_cropped__focal_mean_unfixed <-  focal(imperv_cropped, w = fw_sum, na.rm =
 imperv_cropped__focal <- focal(imperv_cropped, w = fw_sum, na.rm = TRUE) 
 
 
+
 #Plot the results
 
 #plot original
 plot(imperv_cropped, main ="Input Raster") 
 #plot result of circular moving window
-plot(imperv_cropped__focal, main ="Circular MW Mean") 
+plot(imperv_cropped__focal, main ="Circular MW Mean Using Spatial Weight, No Mean Function")
+plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unficed") 
+
 
 
 #NOTES ON FOCALWEIGHT
@@ -490,7 +493,7 @@ fw_fixed <- fw_sum
 
 
 #recall the code we used above to try and get the mean....now featuring the fixed weighted matrix
-imperv_cropped__focal_mean <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = mean)
+imperv_cropped__focal_mean_fixed <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = mean)
 
 
 #But what if we want to calculate the sum?
@@ -500,7 +503,8 @@ imperv_cropped__focal_sum <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, 
 
 
 # plot(imperv_cropped__focal, main="Circular MW SUM")
-plot(imperv_cropped__focal_mean, main ="Circular MW Mean with `fun= mean` specified")
+plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unficed") 
+plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")
 plot(imperv_cropped__focal, main ="Circular MW correct without specifying `fun = mean`")
 plot(imperv_cropped, main ="Input Raster") #plot original
 plot(imperv_cropped__focal_sum, main ="Circular MW correct without ")
