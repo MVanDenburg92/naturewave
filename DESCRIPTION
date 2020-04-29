@@ -4,7 +4,7 @@ Version: 0.0.1
 Author: Miles Van Denburg
 Maintainer: Miles Van Denburg <mvandenburg@clarku.edu>
 Description: Final Project Package for GEOG246-346 class.
-License: What license it uses
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Depends:
@@ -12,13 +12,13 @@ Depends:
     sf,
     tidyverse
 Imports:
-    cowplot,
-    lwgeom,
     rgdal,
     rgeos
 Suggests: 
     kableExtra,
     knitr, 
     prettydoc,
-    rmarkdown
+    rmarkdown,
+    plotly
 VignetteBuilder: knitr
+RoxygenNote: 7.1.0

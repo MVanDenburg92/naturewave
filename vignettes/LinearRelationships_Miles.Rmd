@@ -76,9 +76,9 @@ Brings in the CSVS with the buffer as a dataframe  and runs a quick test to sele
 # 
 # read_csv(system.file("naturewave/extdata/DF_Fulltable_CBIND.csv", 
 #                                 package = "naturewave"))
+getwd()
 
-
-setwd(dir = "../naturewave/extdata/data/")
+setwd("../naturewave/extdata/data/")
 DF <- read.csv("DF_Fulltable_CBIND.csv")
 
 # DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
@@ -510,6 +510,8 @@ plot(imperv_cropped, main ="Input Raster") #plot original
 plot(imperv_cropped__focal_sum, main ="Circular MW correct sum only ")
 
 
+geospaar::plot_noaxes(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")
+
 ```
 
 
@@ -731,8 +733,10 @@ plot(buffs_extract[[1]]$sites, pch = 1, col = NA, add = TRUE)
 #1, 3, 5, 9, 12 have values >70
 
 buff500_firstsite <- buffs_extract[[1]]$sites %>% slice(1)
+buff3000_firstsite <- buffs_extract[[6]]$sites %>% dplyr::slice(1)
 
 buff500_secondsite <- buffs_extract[[1]]$sites %>% slice(2)
+buff3000_secondsite <- buffs_extract[[6]]$sites %>% dplyr::slice(2)
 
 buff500_thirdsite <- buffs_extract[[1]]$sites %>% slice(3)
 
@@ -752,6 +756,12 @@ plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function spe
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 plot(imperv_cropped__focal, main ="Circular MW correct without", ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+
+
+
+plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff3000_secondsite))
+buffs_extract[[6]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+
 
 
 #Crop imperv_cropped to the first buffer site
