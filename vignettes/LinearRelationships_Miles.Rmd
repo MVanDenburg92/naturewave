@@ -75,19 +75,15 @@ Brings in the CSVS with the buffer as a dataframe  and runs a quick test to sele
 # 
 # read_csv(system.file("naturewave/external/DF_Fulltable_CBIND.csv", 
 #                                 package = "naturewave"))
-getwd()
 
-path(./external/data, ext = "csv")
+setwd(dir = "../external/data/")
+DF <- read.csv("DF_Fulltable_CBIND.csv")
 
-
-setwd(dir = "/external/data/")
-DF <- read.csv("external/data/DF_Fulltable_CBIND.csv")
-
-dem <- getData(name = "DF_Fulltable_CBIND", path = "./external/data")
+# dem <- getData(name = "DF_Fulltable_CBIND", path = "~/external/data")
 
 # DF <- read.csv("./external/DF_Fulltable_CBIND.csv")
 
-documentation?
+# documentation?
 
 
 # DF<- read.csv("ALL_INDICES.csv")
@@ -122,7 +118,7 @@ Think about RGEE and how it could be used
 # sample_points_f <- st_read("sample_sites_projected.shp")
 
 
-setwd("../naturewave/external/data/sample_sites/")
+setwd("../external/data/sample_sites/")
 sample_points_f <- st_read("sample_sites_projected.shp")
 
 sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
@@ -171,13 +167,12 @@ st_crs(sample_points_f)
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 # Import AOI shapefile containing site
 
-setwd("../naturewave/external/data/sample_sites/")
+setwd("../external/data/sample_sites/")
 AOI <- st_read("AOI.shp")
 AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 
 #We can also create the shapefile this way
-pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.69707031707116, 42.69707031707116, 42.02124129930544), 
-                             y = c(-71.53416964017146, -71.53416964017146, -72.30321260892146, -72.30321260892146, -71.53416964017146))))
+pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.69707031707116, 42.69707031707116, 42.02124129930544),  y = c(-71.53416964017146, -71.53416964017146, -72.30321260892146, -72.30321260892146, -71.53416964017146))))
 
 
 
@@ -194,11 +189,6 @@ massmaps <- counties %>% filter(grepl("massachusetts", state, ignore.case = TRUE
 #or masscounties %>% plot(.,border = "transparent")
 
 masscounties <- massmaps[, "county"] 
-
-str(masscounties)
-st_crs(masscounties)
-
-masscounties <- st_transform(x = masscounties, crs = st_crs(sample_points_f))
 
 ma_crop <- masscounties %>% st_transform(crs = st_crs(sample_points_f)) %>% st_crop(., AOI)
 
@@ -295,7 +285,7 @@ Road traffic
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #import immperviousness raster file
-imperv <- raster("../naturewave/external/data/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
+imperv <- raster("../external/data/Amherst_CAPS2011/imperv.tif", crs = crs(sample_points_f))
 plot(imperv)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -310,7 +300,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 #import connectedness raster file
 
-connect <- raster("../naturewave/external/data/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
+connect <- raster("../external/data/Amherst_CAPS2011/connect.tif", crs = crs(sample_points_f))
 plot(connect)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -324,7 +314,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import structure raster file
-structure <- raster("../naturewave/external/data/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
+structure <- raster("../external/data/Amherst_CAPS2011/structure.tif", crs = crs(sample_points_f))
 plot(structure)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -345,7 +335,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import connectedness raster file
-traffic <- raster("../naturewave/external/data/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
+traffic <- raster("../external/data/Amherst_CAPS2011/traffic.tif", crs = crs(sample_points_f))
 plot(traffic)
 plot(sample_points_f, col = "green", add = TRUE)
 plot(AOI, add = TRUE)
@@ -361,14 +351,13 @@ plot(imperv_cropped)
 
 
 
-
-
 ###Example plot of data
 
 par(mar = c(0, 0, 1, 0) + .1)
 plot(structure, c, axes = FALSE, nr = 4)
 plot(sample_points_f, col = "red", add=TRUE)
 
+#Example of plotting out a single site
 par(mar = c(0, 0, 1, 0) + .1)
 plot(structure, c, axes = FALSE, nr = 4)
 sample_points_f %>% slice(1) %>% plot(col = "red", add=TRUE)
@@ -748,8 +737,7 @@ buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
 
-plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied")
-, ext = extent(buff3000_secondsite))
+plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff3000_secondsite))
 buffs_extract[[6]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
