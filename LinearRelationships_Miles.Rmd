@@ -2,7 +2,16 @@
 title: "LinearRelationships_Miles"
 author: "Miles Van Denburg"
 date: "4/20/2020"
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc_depth: 5
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{LinearRelationships_Miles}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 References: 
@@ -18,13 +27,14 @@ References:
 #https://r-spatialecology.github.io/landscapemetrics/reference/sample_lsm.html#details
 
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE }
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+
 Setting up the package with the packages we plan to use
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Libraries
 library(tidyverse)
 library(tidyselect)
@@ -41,8 +51,8 @@ library(landscapemetrics)
 library(RColorBrewer)
 
 
-install.packages("USAboundaries")
-install.packages("maps")
+# install.packages("USAboundaries")
+# install.packages("maps")
 #rnaturalearth
 #maps package
 #tidycensus
@@ -53,22 +63,41 @@ library(USAboundaries)
 
 
 
-Brings in the CSVS with the buffer and 
-```{r}
-setwd("~/Spatial_Analysis_R/naturewave/CSVS")
+Brings in the CSVS with the buffer as a dataframe  and runs a quick test to select columns from the dataframe displaying the NDSI values per buffer per site to show the values. 
+
+
+
+```{r,include=FALSE, warning = FALSE, message = FALSE}
+# setwd("~/Spatial_Analysis_R/naturewave/ExtData/")
+
+
+# 
+# setwd("~/Spatial_Analysis_R/naturewave/extdata/")
+# 
+# read_csv(system.file("naturewave/extdata/DF_Fulltable_CBIND.csv", 
+#                                 package = "naturewave"))
+
+
+setwd(dir = "../naturewave/extdata/")
+DF <- read.csv("../extdata/DF_Fulltable_CBIND.csv")
+
+# DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
+
+
+
 # DF<- read.csv("ALL_INDICES.csv")
 
 #Your Choice whether to read in the data from a csv or use the made datafram
 
-DF <- read.csv("DF_Fulltable_CBIND.csv")
+# DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
 
 
-DF_transposed <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
+DF_NDSI_ <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
 
 
 DF_Transposed_NDSI <- pivot_wider(DF_transposed, names_from = Buffer, values_from = NDSI_select)
 
-pivot_longer(-religion, names_to = "Buffer", values_to = "Imperv")
+# pivot_longer(-religion, names_to = "Buffer", values_to = "Imperv")
 
 
 # write.csv(DF_Transposed_NDSI, file = "DF_Transposed_NDSI.csv")
@@ -81,14 +110,17 @@ pivot_longer(-religion, names_to = "Buffer", values_to = "Imperv")
 
 Think about RGEE and how it could be used  
 
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 ##import Shapefile for the sites of interest
-setwd("~/Spatial_Analysis_R/naturewave/CENSUS2010TIGERROADS_SHP/")
+
+# setwd("~/Spatial_Analysis_R/naturewave/CENSUS2010TIGERROADS_SHP/")
+# sample_points_f <- st_read("sample_sites_projected.shp")
+
+
+setwd("../naturewave/extdata/sample_sites/")
 sample_points_f <- st_read("sample_sites_projected.shp")
 
 sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
-
-
 
 
 ##Examine geometry list-column 
@@ -102,13 +134,16 @@ st_crs(sample_points_f)
 
 
 
-sample_points_Albers <- st_read("sample_sites_projected_1.shp")
-
-sample_points_Albers
-
-
-#Examines coordinate system of the sample points projected to NAD 1983 Albers 
-st_crs(sample_points_Albers)
+# ##import Shapefile for the sites of interest projeccted into albers equal area
+# getwd()
+# setwd("../naturewave/extdata/sample_sites/")
+# sample_points_Albers <- st_read("sample_sites_projected_albers.shp")
+# 
+# sample_points_Albers
+# 
+# 
+# #Examines coordinate system of the sample points projected to NAD 1983 Albers 
+# st_crs(sample_points_Albers)
 
 
 
@@ -128,10 +163,10 @@ st_crs(sample_points_Albers)
 ```
 
 
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 # Import AOI shapefile containing site
 
-setwd("~/Spatial_Analysis_R/naturewave/CENSUS2010TIGERROADS_SHP")
+setwd("../naturewave/extdata/sample_sites/")
 AOI <- st_read("AOI.shp")
 AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 
@@ -176,7 +211,6 @@ st_crs(masscounties)
 
 masscounties <- st_transform(x = masscounties, crs = st_crs(sample_points_f))
 
-#import counties massachussets state boundary
 
 
 #Plot out AOI on top of massachussets state boundary
@@ -267,9 +301,9 @@ Road traffic
 
 
 
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #import immperviousness raster file
-imperv <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
+imperv <- raster("../naturewave/extdata/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
 plot(imperv)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -282,17 +316,9 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 
-# imperv_alb <- projectRaster(from = imperv, res = 11000, crs = crs(sample_points_f), 
-#                           method = "ngb")
-# 
-# 
-# 
-# my_aoi_raster <- st_transform(x = imperv, crs = st_crs(my_raster))
-# st_crs(imperv)
-
-
 #import connectedness raster file
-connect <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
+
+connect <- raster("../naturewave/extdata/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
 plot(connect)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -306,7 +332,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import structure raster file
-structure <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
+structure <- raster("../naturewave/extdata/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
 plot(structure)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -327,7 +353,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import connectedness raster file
-traffic <- raster("~/Spatial_Analysis_R/naturewave/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
+traffic <- raster("../naturewave/extdata/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
 plot(traffic)
 plot(sample_points_f, col = "green", add = TRUE)
 plot(AOI, add = TRUE)
@@ -358,39 +384,17 @@ sample_points_f %>% slice(1) %>% plot(col = "red", add=TRUE)
 ```
 
 
-```{r}
-
-# # Creates matrix of our sample points to utilize with landscapemetrics
-# matrix1 <-  sample_points_f[,5]
-# str(matrix1)
-# 
-# sample_points_online <- matrix(c(10, 5, 25, 15, 5, 25), ncol = 2, byrow = TRUE)
-# 
-# sampLat <- sample_points_f$Lat
-# sampLong <- sample_points_f$Long
-# 
-# sampboth <-  matrix(c(sample_points_f$Lat,sample_points_f$Long), ncol = 2, byrow = FALSE)
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 
 #Create matrix of points from geometry fieldof our sample points to utilize with landscapemetrics
 samp_matrix <- unlist(matrix(sample_points_f$geometry, ncol = 2))
-samp_matrix <- matrix(data = samp_matrix, ncol = 2, byrow = TRUE)
-
-
+samp_matrix <- matrix(data = samp_matrix, ncol = 2, byrow = TRUE)[-12,]
 
 ```
 
 
 calculate landscape metrics on many different buffer sizes at the same time.
 You just need to select what sizes you are interested in and use the sample_lsm() function inside a map_dfr() function.
-```{r}
-# 
-# # creating buffers of 3000 and 6000 meters 
-# sizes = c(500, 1000, 1500, 2000, 2500, 3000)
-# 
-# # calculating shdi (landscape metric) for each buffer for imperv_cropped
-# imperv_cropped_buffs <- sizes %>% set_names() %>% purrr::map_dfr(~sample_lsm(imperv_cropped, points = sample_points_f, what = "lsm_l_shdi", size = .), .id = "buffer")
-```
-
 
 
 # Calculates the percentage landcover metric for the raster file. 
@@ -407,11 +411,17 @@ Especially together with the total landscape area (lsm_l_ta), it can also give a
 structure (e.g. many small patches vs. few larges patches).
 
 
-```{r}
 
-#List all available landscape metrics depending on the provided filter arguments.
-#If an argument is not provided, automatically all possibilities are selected.
-list_lsm()
+P D =N/A∗ 10000 ∗ 100
+where N is the number of patches and A is the total landscape area in square meters.
+PD is an ’Aggregation metric’. It describes the fragmentation the landscape, however, does not
+necessarily contain information about the configuration or composition of the landscape. In contrast
+to lsm_l_np it is standardized to the area and comparisons among landscapes with different total
+area are possible.
+
+
+
+```{r, include=FALSE, warning = FALSE, message = FALSE}
 
 #Check to see if the landscape is good to use
 check_landscape(imperv_cropped)
@@ -421,19 +431,48 @@ metric_imperv <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape
 metric_imperv
 
 
+
+metric_imperv_pd <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_pd", verbose = TRUE, progress = TRUE)
+
+metric_imperv_pd
+
+
+spatialize_lsm(imperv_cropped)
+
+
+
+metric_imperv_NP <- sample_lsm(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, level = "landscape", what = "lsm_l_np", verbose = TRUE, progress = TRUE)
+
+metric_imperv_NP
+
+
+
+Number of Patches (NP)
+
+
+
+
 metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
 
 metric_struct
 
 
-metric_connect <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+metric_struct_pd <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
 
-metric_connect
+metric_struct_pd
 
 
-metric_traffic <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
 
-metric_traffic
+
+metric_connect_pd <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+
+metric_connect_pd
+
+
+
+metric_traffic_pd <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+
+metric_traffic_pd
 
 
 #Drop rows with NA in the values field
@@ -477,56 +516,150 @@ metric_traffic
 
 ```
 
-Calculate area mean of landscape by buffer using lsm_l_area_mn
+Calculate area mean of landscape core area by buffer using lsm_l_area_mn
 
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #lsm_l_cai_mn
 
 metric_imperv_core <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = " landscape", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
 
 metric_imperv_core
 
+
+
+#Sources for understanding focal window
+# http://r-sig-geo.2731867.n2.nabble.com/Raster-package-Focal-sum-in-circles-td7587683.html
+# https://gis.stackexchange.com/questions/292409/why-different-results-of-mean-calculations-with-focal-in-r-and-esri-arcgis
+# https://www.timassal.com/?p=2092
+# https://gis.stackexchange.com/questions/287553/how-to-use-sum-of-circular-moving-window-for-each-center-cell-with-focal-in-r
+# https://www.rdocumentation.org/packages/raster/versions/3.0-12/topics/focal
+# https://www.rdocumentation.org/packages/raster/versions/3.0-12/topics/focalWeight
+
+
+
+# NOTES ON FOCAL FUNCTION
+#.............................................
+
+#focal passes over each image pixel, and multiplies those weights by each pixel value in the neighborhood, and then sums those to get the mean
+# It sums the values because sum is the default value of the argument “fun” in the function focal, which is why we have not even specified the argument “fun” in Block 1
+# The focal function operates on the matrix, regardless of it being circular or rectangular and assigns the resulting value to the center cell. In a binary matrix values with 1 would be operated on and those with 0, ignored. A circular window is a rectangular matrix where, values occuring outside the defined radius are 0. 
+
+
+# Since we are interested in the range of the recording device and because we have assigned a consistent value across the buffers for NDSI, ANT, and BIO varying per site per metric, we are going to use a focalWeight circle to replicate the 3000m buffer and pass it over the entirety of the images for imperv, connect, and structure. This will give us a raster for each and 
+
+#cell resolution is 30 x 30
+fw_sum <- focalWeight(imperv_cropped, 3000, type='circle') 
+#have a look at the shape of the moving window
+fw_sum
+
+# apply moving window
+
+# If we apply fw to the focal function specifying the mean function then we get unexpected results.
+imperv_cropped__focal_mean_unfixed <-  focal(imperv_cropped, w = fw_sum, na.rm = TRUE, fun = mean)
+
+
+# In fact to get the mean using the weighted matrix, you dont need to specify the function `mean`.Your focal weights sum to 1, such that you get the mean value when using 'fun=sum', which is the default for focal()
+imperv_cropped__focal <- focal(imperv_cropped, w = fw_sum, na.rm = TRUE) 
+
+
+#Plot the results
+
+#plot original
+plot(imperv_cropped, main ="Input Raster") 
+#plot result of circular moving window
+plot(imperv_cropped__focal, main ="Circular MW Mean") 
+
+
+#NOTES ON FOCALWEIGHT
+# ...................................
+
+# With focalWeight and type='circle' the cells can be 0 or sum up to 0 (which means they are often really small numbers). Since the weights instead make it so that they add up to 0, the decimal values are returned as the values. 
+
+#If you want to apply the function mean after the fact you have to change them to only cells of 0 and 1 
+#If you do not specify the `fun = mean` you are then able to calculate the sum of the values
+
+fw_sum[fw_sum > 0] <- 1
+
+fw_fixed <- fw_sum
+
+
+#recall the code we used above to try and get the mean....now featuring the fixed weighted matrix
+imperv_cropped__focal_mean <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = mean)
+
+
+#But what if we want to calculate the sum?
+imperv_cropped__focal_sum <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = sum)
+
+
+
+
+# plot(imperv_cropped__focal, main="Circular MW SUM")
+plot(imperv_cropped__focal_mean, main ="Circular MW Mean with `fun= mean` specified")
+plot(imperv_cropped__focal, main ="Circular MW correct without specifying `fun = mean`")
+plot(imperv_cropped, main ="Input Raster") #plot original
+plot(imperv_cropped__focal_sum, main ="Circular MW correct without ")
+
+
 plot(imperv_cropped)
 
+
+
+#2 apply circular moving window to continuous data
+###
+#set the focal weight, since we are using a circle, set number to the radius of the circle (in units of CRS)
+
+####
+####
+
+
 # show_patches(imperv_cropped)
-
-
-
-metric_struct_core <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-
-metric_struct_core
-
-plot(structure_cropped)
-
-
-
-metric_connect_core <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-
-metric_connect_core
-
-plot(connect_cropped)
-
-
-
-metric_traffic_core <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-
-metric_traffic_core
-
-plot(traffic_cropped)
+# 
+# 
+# 
+# metric_struct_core <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_struct_core
+# 
+# plot(structure_cropped)
+# 
+# 
+# 
+# metric_connect_core <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_connect_core
+# 
+# plot(connect_cropped)
+# 
+# 
+# 
+# metric_traffic_core <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_traffic_core
+# 
+# plot(traffic_cropped)
 
 
 
 ```
 
 
+Extract values from a Raster* object at the locations of other spatial data. You can use coordinates
+(points), lines, polygons or an Extent (rectangle) object. You can also use cell numbers to extract
+values.
+If y represents points, extract returns the values of a Raster* object for the cells in which a set of
+points fall. If y represents lines, the extract method returns the values of the cells of a Raster*
+object that are touched by a line. If y represents polygons, the extract method returns the values
+of the cells of a Raster* object that are covered by a polygon. A cell is covered if its center is inside
+the polygon (but see the weights option for considering partly covered cells; and argument small
+for getting values for small polygons).
+It is also possible to extract values for point locations from SpatialPolygons.
 
 
 
 
 
 
-
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 set.seed(1)
 buffs_extract <- lapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
   #2a
@@ -554,6 +687,10 @@ buffs_extract_zonal_Impervious <- sapply(c(500, 1000, 1500, 2000, 2500, 3000), f
 zonal <- extract(imperv_cropped, sample_points_f, fun= mean, buffer = x, na.rm=TRUE)
 })
 buffs_extract_zonal_Impervious <- as.data.frame(buffs_extract_zonal_Impervious)
+
+
+
+
 
 #Create new field called 'SiteName' using the site names from sample_points_f$Site
 
@@ -727,13 +864,14 @@ plot(buffs_extract[[2]]$sites, pch = 1, col = NA, add = TRUE)
 plot(buffs_extract[[1]]$sites, pch = 1, col = NA, add = TRUE)
 
 
-
+#Oddity, buffers coming in with 
 
 #1, 3, 5, 9, 12 have values >70
 
-#print out metric_imperv
-
 buff500_firstsite <- buffs_extract[[1]]$sites %>% slice(1)
+
+buff500_secondsite <- buffs_extract[[1]]$sites %>% slice(2)
+
 buff500_thirdsite <- buffs_extract[[1]]$sites %>% slice(3)
 
 buff500_fifthsite <- buffs_extract[[1]]$sites %>% slice(5)
@@ -741,10 +879,45 @@ buff500_fifthsite <- buffs_extract[[1]]$sites %>% slice(5)
 buff500_ninthsite <- buffs_extract[[1]]$sites %>% slice(9)
 
 
-metric_imperv
+
+
+
+
+
+plot(imperv_cropped__focal_mean, main ="Circular MW Mean with function speficied")
+plot(imperv_cropped__focal, main ="Circular MW correct without ")
+
 #plot out cropped imperv values with selected outlier values
 plot(imperv_cropped, ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+plot(imperv_cropped__focal_mean, main ="Circular MW Mean with function speficied", ext = extent(buff500_firstsite))
+buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+plot(imperv_cropped__focal, main ="Circular MW correct without", ext = extent(buff500_firstsite))
+buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+
+
+
+
+
+
+#Crop imperv_cropped to the first buffer site
+
+crop_firstsite <- crop(x = imperv_cropped, y = extent(buff500_firstsite))
+
+
+
+
+
+plot(imperv_cropped, ext = extent(buff500_secondsite))
+buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
+
+
+# chirps1_dist72 <- crop(x = chirpsz[[1]], y = districts %>% slice(72))
+
+
+
+
+
 
 plot(imperv_cropped, ext = extent(buff500_thirdsite))
 buffs_extract[[1]]$sites %>% slice(3) %>% plot(col = NA, add=TRUE, border = "red")
@@ -763,12 +936,30 @@ plot(buffs_extract[[1]]$sites, pch = 1, col = NA)
 
 
 
+imperv_cropped
 
 ```
 
-## Code to create linear correlations between NDSI and IMperviousness, connectedness, and structure
+
+# 3.2.2.2 Focal
+Another way of calculating image statistics is to use a moving window/neighborhood approach. This is done with the focal function, which can be used to calculate a large number of different statistics. Here’s we’ll just show you the mean (also known as a low pass filter), with a few permutations to illustrate the concept. Disclaimer: This section assumes that you have applied moving window functions/low pass/high pass filters in your GIS/remote sensing classes so far, and thus are familiar with the calculations. If not, please be sure to ask about this in class.
+
 
 ```{r}
+wmat <- matrix(1 / 9, nrow = 5, ncol = 5) 
+
+plot(imperv_cropped)
+
+chirps1_focmu5 <- focal(x = imperv_cropped, w = wmat, na.rm = TRUE) 
+
+plot(chirps1_focmu5)
+```
+
+
+
+## Code to create linear correlations between NDSI and IMperviousness, connectedness, and structure
+
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #NDSI vs Impervious
 lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 NDSI_Imperv_lm <- summary(lm_NDSI_Imperv)$r.squared
@@ -822,7 +1013,7 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traff
 ## Code to create linear correlations between ANT and IMperviousness, connectedness, and Structure
 
 
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Anthrophony vs Impervious
 lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 ANT_Imperv_lm <- summary(lm_ANT_Imperv)$r.squared
@@ -869,9 +1060,9 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony, y = Imperv_connect_Struc
 ```
 
 
-## Code to create linear correlations between BIO and IMperviousness, connectedness, and structure
+## Code to create linear correlations between BIO and Imperviousness, connectedness, and structure
 
-```{r}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Biophony vs Impervious
 
 lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
@@ -925,7 +1116,7 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony, y = Imperv_connect_Struct_T
 
 Code to create linear r squared dataframe from the rsquared summaries above
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 # as. Buffer <- Imperv_connect_Struct_NDSI$Buffer
 
 Buffer <- c(500, 1000,1500,2000,2500,3000)
@@ -934,7 +1125,7 @@ linear_rsquared <- data.frame(Buffer, NDSI_Imperv_lm, NDSI_Connect_lm, NDSI_Stru
 
 
 
-write.csv(linear_rsquared, file = "linear_rsquared_traffic_included.csv")
+# write.csv(linear_rsquared, file = "linear_rsquared_traffic_included.csv")
 
 
 #-------------------------------------------------------------------------------------------------------------------------
@@ -991,35 +1182,33 @@ ggplotly(RSquaredPlot_Bio)
 
 
 
-## Code to create linear correlations between NDSI and Imperviousness, connectedness, and structure
-```{r}
-#NDSI vs Impervious
-lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
-NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared
+<!-- ## Code to create linear correlations between NDSI and Imperviousness, connectedness, and structure -->
+<!-- ```{r} -->
+<!-- #NDSI vs Impervious -->
+<!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE) -->
+<!-- NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared -->
 
-lm_NDSI_NDVI
-NDSI_NDVI_lm
+<!-- lm_NDSI_NDVI -->
+<!-- NDSI_NDVI_lm -->
 
-cor(x = DF$NDSI_select, y = DF$MEAN_NDVI)
+<!-- cor(x = DF$NDSI_select, y = DF$MEAN_NDVI) -->
 
-```
-
-
-
-## Code to create linear correlations between NDSI and connectedness, and structure
-```{r}
-#NDSI vs Impervious
-lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
-NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared
-
-lm_NDSI_NDVI
-NDSI_NDVI_lm
-
-cor(x = DF$NDSI_select, y = DF$MEAN_NDVI)
-
-```
+<!-- ``` -->
 
 
+
+<!-- ## Code to create linear correlations between NDSI and connectedness, and structure -->
+<!-- ```{r} -->
+<!-- #NDSI vs Impervious -->
+<!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE) -->
+<!-- NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared -->
+
+<!-- lm_NDSI_NDVI -->
+<!-- NDSI_NDVI_lm -->
+
+<!-- cor(x = DF$NDSI_select, y = DF$MEAN_NDVI) -->
+
+<!-- ``` -->
 
 
 
@@ -1029,102 +1218,104 @@ cor(x = DF$NDSI_select, y = DF$MEAN_NDVI)
 
 
 
-The landscapemetrics package has a function designed for calculations of landscape metrics for a given buffer.
-It is called sample_lsm() and it expects, at least three input arguments – a raster, a vector (points), and a buffer size. As a default, it calculates all of the available metrics in a square buffer, where buffer size is the side-length in map units (e.g. meters).
-
-```{r}
-
-##> Calculate percentage of landscape area and edge metric class lsm_c_pland 
-my_metric_pland = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_pland")
-my_metric_pland
-
-#Create new field called 'SiteName' using the site names from sample_points_f$Site
-
-my_metric_pland <- my_metric_pland %>% 
-  mutate(
-    SiteName = case_when(
-      grepl("1", plot_id) ~ "Leadmine Mountain",
-      grepl("2", plot_id) ~ "Braod Meadow Brook", 
-      grepl("3", plot_id) ~ "Burncoat Pond", 
-      grepl("4", plot_id) ~ "Pierpoint Meadow",
-      grepl("5", plot_id) ~ "Rutland Brook", 
-      grepl("6", plot_id) ~ "Cooks Canyon", 
-      grepl("7", plot_id) ~ "Eagle Lake",
-      grepl("8", plot_id) ~ "Wachusett Meadow", 
-      grepl("9", plot_id) ~ "Lake Wampanoag", 
-      grepl("10", plot_id) ~ "Flat Rocks",
-      grepl("11", plot_id) ~ "Lincoln Woods", 
-    )
-  ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside)
 
 
+<!-- The landscapemetrics package has a function designed for calculations of landscape metrics for a given buffer. -->
+<!-- It is called sample_lsm() and it expects, at least three input arguments – a raster, a vector (points), and a buffer size. As a default, it calculates all of the available metrics in a square buffer, where buffer size is the side-length in map units (e.g. meters). -->
 
+<!-- ```{r} -->
 
-#Calculate Number of patches of class (Aggregation metric)
+<!-- ##> Calculate percentage of landscape area and edge metric class lsm_c_pland  -->
+<!-- my_metric_pland = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_pland") -->
+<!-- my_metric_pland -->
 
-my_metric_lsm_c_np = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_np")
-my_metric_lsm_c_np
+<!-- #Create new field called 'SiteName' using the site names from sample_points_f$Site -->
 
-#Create new field called 'SiteName' using the site names from sample_points_f$Site
-
-my_metric_lsm_c_np <- my_metric_lsm_c_np %>% 
-  mutate(
-    SiteName = case_when(
-      grepl("1", plot_id) ~ "Leadmine Mountain",
-      grepl("2", plot_id) ~ "Braod Meadow Brook", 
-      grepl("3", plot_id) ~ "Burncoat Pond", 
-      grepl("4", plot_id) ~ "Pierpoint Meadow",
-      grepl("5", plot_id) ~ "Rutland Brook", 
-      grepl("6", plot_id) ~ "Cooks Canyon", 
-      grepl("7", plot_id) ~ "Eagle Lake",
-      grepl("8", plot_id) ~ "Wachusett Meadow", 
-      grepl("9", plot_id) ~ "Lake Wampanoag", 
-      grepl("10", plot_id) ~ "Flat Rocks",
-      grepl("11", plot_id) ~ "Lincoln Woods", 
-    )
-  ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside)
-
-#Check that the right amount of names appear = 11
-length(unique(my_metric_pland_All$SiteName))
-
-
-```
+<!-- my_metric_pland <- my_metric_pland %>%  -->
+<!--   mutate( -->
+<!--     SiteName = case_when( -->
+<!--       grepl("1", plot_id) ~ "Leadmine Mountain", -->
+<!--       grepl("2", plot_id) ~ "Braod Meadow Brook",  -->
+<!--       grepl("3", plot_id) ~ "Burncoat Pond",  -->
+<!--       grepl("4", plot_id) ~ "Pierpoint Meadow", -->
+<!--       grepl("5", plot_id) ~ "Rutland Brook",  -->
+<!--       grepl("6", plot_id) ~ "Cooks Canyon",  -->
+<!--       grepl("7", plot_id) ~ "Eagle Lake", -->
+<!--       grepl("8", plot_id) ~ "Wachusett Meadow",  -->
+<!--       grepl("9", plot_id) ~ "Lake Wampanoag",  -->
+<!--       grepl("10", plot_id) ~ "Flat Rocks", -->
+<!--       grepl("11", plot_id) ~ "Lincoln Woods",  -->
+<!--     ) -->
+<!--   ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside) -->
 
 
 
-# Example calculations for landscape metrics
-```{r}
 
-#LandScape Calculations
+<!-- #Calculate Number of patches of class (Aggregation metric) -->
 
-# general structure
-lsm_()
+<!-- my_metric_lsm_c_np = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_np") -->
+<!-- my_metric_lsm_c_np -->
 
-# Patch level
-## lsm_p_"metric"
-lsm_p_enn()
+<!-- #Create new field called 'SiteName' using the site names from sample_points_f$Site -->
 
-# Class level
-## lsm_c_"metric"
-lsm_c_enn()
+<!-- my_metric_lsm_c_np <- my_metric_lsm_c_np %>%  -->
+<!--   mutate( -->
+<!--     SiteName = case_when( -->
+<!--       grepl("1", plot_id) ~ "Leadmine Mountain", -->
+<!--       grepl("2", plot_id) ~ "Braod Meadow Brook",  -->
+<!--       grepl("3", plot_id) ~ "Burncoat Pond",  -->
+<!--       grepl("4", plot_id) ~ "Pierpoint Meadow", -->
+<!--       grepl("5", plot_id) ~ "Rutland Brook",  -->
+<!--       grepl("6", plot_id) ~ "Cooks Canyon",  -->
+<!--       grepl("7", plot_id) ~ "Eagle Lake", -->
+<!--       grepl("8", plot_id) ~ "Wachusett Meadow",  -->
+<!--       grepl("9", plot_id) ~ "Lake Wampanoag",  -->
+<!--       grepl("10", plot_id) ~ "Flat Rocks", -->
+<!--       grepl("11", plot_id) ~ "Lincoln Woods",  -->
+<!--     ) -->
+<!--   ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside) -->
 
-# Landscape level
-## lsm_p_"metric"
-lsm_l_enn()
-
-
-
-# calculate for example the Euclidean nearest-neighbor distance on patch level
-lsm_p_enn(my_aoi_raster)
-
-
-#As landscapemetrics are known to be scale dependent, it becomes necessary to use a moving window approach to deal with this
-#The moving window assigns to each focal cell in the landscape the metric value of its local neighborhood specified by a neighborhood matrix.
-#The resulting raster describes the landscape in regard to the local variability of the chosen metricc.
-#Within landscapemetrics a moving window approach can be used by using window_lsm()
-window <- matric(1, nrow  =5, ncol = 5)
-window_lsm(x, window = window, what = c("lsm_l_pr", "lsm_l_joinent"))
+<!-- #Check that the right amount of names appear = 11 -->
+<!-- length(unique(my_metric_pland_All$SiteName)) -->
 
 
-```
+<!-- ``` -->
+
+
+
+<!-- # Example calculations for landscape metrics -->
+<!-- ```{r} -->
+
+<!-- #LandScape Calculations -->
+
+<!-- # general structure -->
+<!-- lsm_() -->
+
+<!-- # Patch level -->
+<!-- ## lsm_p_"metric" -->
+<!-- lsm_p_enn() -->
+
+<!-- # Class level -->
+<!-- ## lsm_c_"metric" -->
+<!-- lsm_c_enn() -->
+
+<!-- # Landscape level -->
+<!-- ## lsm_p_"metric" -->
+<!-- lsm_l_enn() -->
+
+
+
+<!-- # calculate for example the Euclidean nearest-neighbor distance on patch level -->
+<!-- lsm_p_enn(my_aoi_raster) -->
+
+
+<!-- #As landscapemetrics are known to be scale dependent, it becomes necessary to use a moving window approach to deal with this -->
+<!-- #The moving window assigns to each focal cell in the landscape the metric value of its local neighborhood specified by a neighborhood matrix. -->
+<!-- #The resulting raster describes the landscape in regard to the local variability of the chosen metricc. -->
+<!-- #Within landscapemetrics a moving window approach can be used by using window_lsm() -->
+<!-- window <- matric(1, nrow  =5, ncol = 5) -->
+<!-- window_lsm(x, window = window, what = c("lsm_l_pr", "lsm_l_joinent")) -->
+
+
+<!-- ``` -->
 
