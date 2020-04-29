@@ -78,8 +78,8 @@ Brings in the CSVS with the buffer as a dataframe  and runs a quick test to sele
 #                                 package = "naturewave"))
 
 
-setwd(dir = "../naturewave/extdata/")
-DF <- read.csv("../extdata/DF_Fulltable_CBIND.csv")
+setwd(dir = "../naturewave/extdata/data/")
+DF <- read.csv("DF_Fulltable_CBIND.csv")
 
 # DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
 
@@ -92,10 +92,10 @@ DF <- read.csv("../extdata/DF_Fulltable_CBIND.csv")
 # DF <- read.csv("./extdata/DF_Fulltable_CBIND.csv")
 
 
-DF_NDSI_ <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
+DF_NDSI <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
 
 
-DF_Transposed_NDSI <- pivot_wider(DF_transposed, names_from = Buffer, values_from = NDSI_select)
+DF_Transposed_NDSI <- pivot_wider(DF_NDSI, names_from = Buffer, values_from = NDSI_select)
 
 # pivot_longer(-religion, names_to = "Buffer", values_to = "Imperv")
 
@@ -117,7 +117,7 @@ Think about RGEE and how it could be used
 # sample_points_f <- st_read("sample_sites_projected.shp")
 
 
-setwd("../naturewave/extdata/sample_sites/")
+setwd("../naturewave/extdata/data/sample_sites/")
 sample_points_f <- st_read("sample_sites_projected.shp")
 
 sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
@@ -166,7 +166,7 @@ st_crs(sample_points_f)
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 # Import AOI shapefile containing site
 
-setwd("../naturewave/extdata/sample_sites/")
+setwd("../naturewave/extdata/data/sample_sites/")
 AOI <- st_read("AOI.shp")
 AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 
@@ -217,6 +217,9 @@ masscounties <- st_transform(x = masscounties, crs = st_crs(sample_points_f))
 
 
 ```
+
+
+
 
 ```{r}
 # ##import Raster isolated to AOI, in Albers Equal Area
@@ -303,7 +306,7 @@ Road traffic
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #import immperviousness raster file
-imperv <- raster("../naturewave/extdata/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
+imperv <- raster("../naturewave/extdata/data/Amherst_CAPS2011/imperv/imperv.tif", crs = crs(sample_points_f))
 plot(imperv)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -318,7 +321,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 #import connectedness raster file
 
-connect <- raster("../naturewave/extdata/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
+connect <- raster("../naturewave/extdata/data/Amherst_CAPS2011/connect/connect.tif", crs = crs(sample_points_f))
 plot(connect)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -332,7 +335,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import structure raster file
-structure <- raster("../naturewave/extdata/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
+structure <- raster("../naturewave/extdata/data/Amherst_CAPS2011/structure/structure.tif", crs = crs(sample_points_f))
 plot(structure)
 plot(sample_points_f, col = "red", add = TRUE)
 plot(AOI, add = TRUE)
@@ -353,7 +356,7 @@ plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import connectedness raster file
-traffic <- raster("../naturewave/extdata/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
+traffic <- raster("../naturewave/extdata/data/Amherst_CAPS2011/traffic/traffic.tif", crs = crs(sample_points_f))
 plot(traffic)
 plot(sample_points_f, col = "green", add = TRUE)
 plot(AOI, add = TRUE)
@@ -420,112 +423,9 @@ to lsm_l_np it is standardized to the area and comparisons among landscapes with
 area are possible.
 
 
-
-```{r, include=FALSE, warning = FALSE, message = FALSE}
-
-#Check to see if the landscape is good to use
-check_landscape(imperv_cropped)
-
-metric_imperv <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
-
-metric_imperv
-
-
-
-metric_imperv_pd <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_pd", verbose = TRUE, progress = TRUE)
-
-metric_imperv_pd
-
-
-spatialize_lsm(imperv_cropped)
-
-
-
-metric_imperv_NP <- sample_lsm(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, level = "landscape", what = "lsm_l_np", verbose = TRUE, progress = TRUE)
-
-metric_imperv_NP
-
-
-
-Number of Patches (NP)
-
-
-
-
-metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
-
-metric_struct
-
-
-metric_struct_pd <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
-
-metric_struct_pd
-
-
-
-
-metric_connect_pd <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
-
-metric_connect_pd
-
-
-
-metric_traffic_pd <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
-
-metric_traffic_pd
-
-
-#Drop rows with NA in the values field
-# 
-# metric3 %>% drop_na(value)
-
-# The output data frame has two rows for each grid cell; therefore, 
-# if we want to connect the result with a spatial object, we need to reformat it.
-# It can be done with the pivot_wider() function from the tidyr package.
-
-# library(tidyr)
-# my_metric3 <- pivot_wider(metric3, names_from = metric, values_from = value)
-# my_metric3
-# 
-
-
-
-
-#Create new field called 'SiteName' using the site names from sample_points_f$Site, and drop the id field with NA values
-#Used anchors. ^ Asserts that we are at the start. $ Asserts that we are at the end.
-
-# my_metric_pland_All <- my_metric_pland_All %>% 
-#   mutate(
-#     SiteName = case_when(
-#       grepl("^1$", plot_id) ~ "Leadmine Mountain",
-#       grepl("^2$", plot_id) ~ "Braod Meadow Brook", 
-#       grepl("^3$", plot_id) ~ "Burncoat Pond", 
-#       grepl("^4$", plot_id) ~ "Pierpoint Meadow",
-#       grepl("^5$", plot_id) ~ "Rutland Brook", 
-#       grepl("^6$", plot_id) ~ "Cooks Canyon", 
-#       grepl("^7$", plot_id) ~ "Eagle Lake",
-#       grepl("^8$", plot_id) ~ "Wachusett Meadow", 
-#       grepl("^9$", plot_id) ~ "Lake Wampanoag", 
-#       grepl("^10$", plot_id) ~ "Flat Rocks",
-#       grepl("^11$", plot_id) ~ "Lincoln Woods", 
-#     )
-#   ) %>% dplyr::select(layer, level, ClassName, class, metric, value, SiteName, size, plot_id, percentage_inside)
-# 
-# 
-
-
-```
-
-Calculate area mean of landscape core area by buffer using lsm_l_area_mn
+## Calculate focal mean stat at a weight of 3000 for each variable of interest--imperviousness, traffic, and connectedness. 
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
-#lsm_l_cai_mn
-
-metric_imperv_core <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = " landscape", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-
-metric_imperv_core
-
-
 
 #Sources for understanding focal window
 # http://r-sig-geo.2731867.n2.nabble.com/Raster-package-Focal-sum-in-circles-td7587683.html
@@ -547,6 +447,12 @@ metric_imperv_core
 
 # Since we are interested in the range of the recording device and because we have assigned a consistent value across the buffers for NDSI, ANT, and BIO varying per site per metric, we are going to use a focalWeight circle to replicate the 3000m buffer and pass it over the entirety of the images for imperv, connect, and structure. This will give us a raster for each and 
 
+
+#2 apply circular moving window to continuous data
+###
+#set the focal weight, since we are using a circle, set number to the radius of the circle (in units of CRS)
+#which you can conventientyly check using the check_landscape() function
+check_landscape(imperv_cropped)
 #cell resolution is 30 x 30
 fw_sum <- focalWeight(imperv_cropped, 3000, type='circle') 
 #have a look at the shape of the moving window
@@ -601,43 +507,6 @@ plot(imperv_cropped__focal_sum, main ="Circular MW correct without ")
 
 
 plot(imperv_cropped)
-
-
-
-#2 apply circular moving window to continuous data
-###
-#set the focal weight, since we are using a circle, set number to the radius of the circle (in units of CRS)
-
-####
-####
-
-
-# show_patches(imperv_cropped)
-# 
-# 
-# 
-# metric_struct_core <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-# 
-# metric_struct_core
-# 
-# plot(structure_cropped)
-# 
-# 
-# 
-# metric_connect_core <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-# 
-# metric_connect_core
-# 
-# plot(connect_cropped)
-# 
-# 
-# 
-# metric_traffic_core <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE)
-# 
-# metric_traffic_core
-# 
-# plot(traffic_cropped)
-
 
 
 ```
@@ -938,21 +807,6 @@ plot(buffs_extract[[1]]$sites, pch = 1, col = NA)
 
 imperv_cropped
 
-```
-
-
-# 3.2.2.2 Focal
-Another way of calculating image statistics is to use a moving window/neighborhood approach. This is done with the focal function, which can be used to calculate a large number of different statistics. Here’s we’ll just show you the mean (also known as a low pass filter), with a few permutations to illustrate the concept. Disclaimer: This section assumes that you have applied moving window functions/low pass/high pass filters in your GIS/remote sensing classes so far, and thus are familiar with the calculations. If not, please be sure to ask about this in class.
-
-
-```{r}
-wmat <- matrix(1 / 9, nrow = 5, ncol = 5) 
-
-plot(imperv_cropped)
-
-chirps1_focmu5 <- focal(x = imperv_cropped, w = wmat, na.rm = TRUE) 
-
-plot(chirps1_focmu5)
 ```
 
 
@@ -1318,4 +1172,141 @@ ggplotly(RSquaredPlot_Bio)
 
 
 <!-- ``` -->
+
+
+
+
+
+
+
+
+<!-- #2 apply circular moving window to continuous data -->
+<!-- ### -->
+<!-- #set the focal weight, since we are using a circle, set number to the radius of the circle (in units of CRS) -->
+
+<!-- #### -->
+<!-- #### -->
+
+
+<!-- # show_patches(imperv_cropped) -->
+<!-- #  -->
+<!-- #  -->
+<!-- #  -->
+<!-- # metric_struct_core <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE) -->
+<!-- #  -->
+<!-- # metric_struct_core -->
+<!-- #  -->
+<!-- # plot(structure_cropped) -->
+<!-- #  -->
+<!-- #  -->
+<!-- #  -->
+<!-- # metric_connect_core <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE) -->
+<!-- #  -->
+<!-- # metric_connect_core -->
+<!-- #  -->
+<!-- # plot(connect_cropped) -->
+<!-- #  -->
+<!-- #  -->
+<!-- #  -->
+<!-- # metric_traffic_core <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE) -->
+<!-- #  -->
+<!-- # metric_traffic_core -->
+<!-- #  -->
+<!-- # plot(traffic_cropped) -->
+
+
+
+
+```{r, include=FALSE, warning = FALSE, message = FALSE}
+
+# metric_imperv <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_imperv
+# 
+# 
+# 
+# metric_imperv_pd <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_pd", verbose = TRUE, progress = TRUE)
+# 
+# metric_imperv_pd
+# 
+# 
+# spatialize_lsm(imperv_cropped)
+# 
+# 
+# 
+# metric_imperv_NP <- sample_lsm(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, level = "landscape", what = "lsm_l_np", verbose = TRUE, progress = TRUE)
+# 
+# metric_imperv_NP
+# 
+# 
+# 
+# Number of Patches (NP)
+# 
+# 
+# 
+# 
+# metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_struct
+# 
+# 
+# metric_struct_pd <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_struct_pd
+# 
+# 
+# 
+# 
+# metric_connect_pd <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_connect_pd
+# 
+# 
+# 
+# metric_traffic_pd <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_traffic_pd
+
+
+#Drop rows with NA in the values field
+# 
+# metric3 %>% drop_na(value)
+
+# The output data frame has two rows for each grid cell; therefore, 
+# if we want to connect the result with a spatial object, we need to reformat it.
+# It can be done with the pivot_wider() function from the tidyr package.
+
+# library(tidyr)
+# my_metric3 <- pivot_wider(metric3, names_from = metric, values_from = value)
+# my_metric3
+# 
+
+
+
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site, and drop the id field with NA values
+#Used anchors. ^ Asserts that we are at the start. $ Asserts that we are at the end.
+
+# my_metric_pland_All <- my_metric_pland_All %>% 
+#   mutate(
+#     SiteName = case_when(
+#       grepl("^1$", plot_id) ~ "Leadmine Mountain",
+#       grepl("^2$", plot_id) ~ "Braod Meadow Brook", 
+#       grepl("^3$", plot_id) ~ "Burncoat Pond", 
+#       grepl("^4$", plot_id) ~ "Pierpoint Meadow",
+#       grepl("^5$", plot_id) ~ "Rutland Brook", 
+#       grepl("^6$", plot_id) ~ "Cooks Canyon", 
+#       grepl("^7$", plot_id) ~ "Eagle Lake",
+#       grepl("^8$", plot_id) ~ "Wachusett Meadow", 
+#       grepl("^9$", plot_id) ~ "Lake Wampanoag", 
+#       grepl("^10$", plot_id) ~ "Flat Rocks",
+#       grepl("^11$", plot_id) ~ "Lincoln Woods", 
+#     )
+#   ) %>% dplyr::select(layer, level, ClassName, class, metric, value, SiteName, size, plot_id, percentage_inside)
+# 
+# 
+
+
+```
+
 
