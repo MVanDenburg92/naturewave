@@ -27,7 +27,7 @@ plot(ma)
 getwd()
 
 # read in sample points
-# pts <- read_sf("./external/data/sample_sites/sample_sites_projected.shp")
+pts <- read_sf("./data/sample_sites/sample_sites_projected.shp")
 
 # read in landcover data
 
@@ -85,7 +85,7 @@ wmatrix <- function(diam, r) {
 diam <- 2000  # buffer size (in meters)
 w <- wmatrix(diam, res(lc_stack)[1])  # weights matrix
 lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("./data/Amherst_CAPS2011", names(lc_stack)[x], "___", diam, ".tif")
+  f <- paste0("./data/Amherst_CAPS2011", names(lc_stack)[x], "_", diam, ".tif")
   r <- focal(lc_stack[[x]], w, filename = f)
   return(r)
 })
@@ -100,16 +100,16 @@ The above is an example for how you can do the focal mean for a 2000 m window. Y
 ## Step 3: extract focal values to get predictors for points
 ```{r, eval = FALSE}
 library(ggplot2)
-pts <- cbind(pts, raster::extract(lc_stack, pts))  # original lc
-pts <- cbind(pts, raster::extract(lc2000, pts))  # buffer points
+pts_3 <- cbind(pts, raster::extract(lc_stack, pts))  # original lc
+pts4 <- cbind(pts_3, raster::extract(lc2000_stack, pts_3))  # buffer points
 
-ggplot(pts) + geom_point(aes(connect, connect_2000)) + 
+ggplot(pts4) + geom_point(aes(connect.,Amherst_CAPS2011connect.____2000)) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
-ggplot(pts) + geom_point(aes(imperv, imperv_2000)) + 
+ggplot(pts4) + geom_point(aes(imperv., Amherst_CAPS2011imperv.____2000)) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
-ggplot(pts) + geom_point(aes(structure, structure_2000)) + 
+ggplot(pts4) + geom_point(aes(structure., Amherst_CAPS2011structure.____2000)) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
-ggplot(pts) + geom_point(aes(traffic, traffic_2000)) + 
+ggplot(pts4) + geom_point(aes(traffic., Amherst_CAPS2011traffic.____2000)) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
 ```
 
