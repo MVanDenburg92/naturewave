@@ -68,10 +68,10 @@ wmatrix <- function(diam, r) {
 
 # run focal mean, here for 2000 m
 diam <- 2000  # buffer size (in meters)
-w <- wmatrix(diam, res(landcover_stack)[1])  # weights matrix
+w <- wmatrix(diam, res(lc_stack)[1])  # weights matrix
 lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("external/data/", names(landcover_stack)[x], "_", diam, ".tif")
-  r <- focal(landcover_stack[[x]], w, filename = f)
+  f <- paste0("external/data/", names(lc_stack)[x], "_", diam, ".tif")
+  r <- focal(lc_stack[[x]], w, filename = f, overwrite = TRUE)
   return(r)
 })
 lc2000_stack <- stack(lc2000)  # stack
@@ -86,7 +86,7 @@ The above is an example for how you can do the focal mean for a 2000 m window. Y
 ```{r, eval = FALSE}
 library(ggplot2)
 pts <- cbind(pts, extract(lc_stack, pts))  # original lc
-pts <- cbind(pts, extract(lc_2000s, pts))  # buffer points
+pts <- cbind(pts, extract(lc2000_stack, pts))  # buffer points
 
 ggplot(pts) + geom_point(aes(connect, connect_2000)) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
