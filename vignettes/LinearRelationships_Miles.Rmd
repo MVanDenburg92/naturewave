@@ -268,11 +268,11 @@ Road traffic
 imperv <- raster("../external/data/Amherst_CAPS2011/imperv.tif", crs = crs(sample_points_f))
 plot(imperv)
 plot(sample_points_f, col = "red", add = TRUE)
-plot(AOI, add = TRUE)
+plot(ma_crop, add = TRUE)
 st_crs(imperv)
 
 #Crop Imperv to AOI and plot
-imperv_cropped <- crop(imperv, y = AOI)
+imperv_cropped <- crop(imperv, y = ma_crop)
 plot(imperv_cropped)
 plot(sample_points_f, col = "red", add = TRUE)
 
@@ -283,12 +283,12 @@ plot(sample_points_f, col = "red", add = TRUE)
 connect <- raster("../external/data/Amherst_CAPS2011/connect.tif", crs = crs(sample_points_f))
 plot(connect)
 plot(sample_points_f, col = "red", add = TRUE)
-plot(AOI, add = TRUE)
+plot(ma_crop, add = TRUE)
 st_crs(connect)
 
 
 #Crop connect to AOI and plot
-connect_cropped <- crop(connect, y = AOI)
+connect_cropped <- crop(connect, y = ma_crop)
 plot(connect_cropped)
 plot(sample_points_f, col = "red", add = TRUE)
 
@@ -301,7 +301,7 @@ plot(AOI, add = TRUE)
 st_crs(structure)
 
 #Crop structure to AOI and plot
-structure_cropped <- crop(structure, y = AOI)
+structure_cropped <- crop(structure, y = ma_crop)
 plot(structure_cropped)
 plot(sample_points_f, col = "red", add = TRUE)
 
@@ -320,7 +320,7 @@ st_crs(traffic)
 
 
 #Crop connect to AOI and plot
-traffic_cropped <- crop(traffic, y = AOI)
+traffic_cropped <- crop(traffic, y = ma_crop)
 plot(traffic_cropped)
 plot(sample_points_f, col = "green", add = TRUE)
 
@@ -409,28 +409,80 @@ check_landscape(imperv_cropped)
 fw_sum <- focalWeight(imperv_cropped, 3000, type='circle') 
 #have a look at the shape of the moving window
 fw_sum
+#...................................................................
 
 
+#Now let's apply the focalweight function to get a focal matrix for each .tif file in the landcover_list 
+
+
+#1500 Buffers
+fw_sum_1500 <- lapply(landcover_list,function(x){
+  fw <- focalWeight(x, 1500, type='circle')
+  })
+
+
+#2000 Buffers
 fw_sum_2000 <- lapply(landcover_list,function(x){
   fw <- focalWeight(x, 2000, type='circle')
   })
+
+#2500 Buffers
+
+fw_sum_2500 <- lapply(landcover_list,function(x){
+  fw <- focalWeight(x, 2500, type='circle')
+  })
+
+
+
 
 # 
 # fw_sum_2000[[3]]
 # 
 # as.matrix(fw_sum_2000[[1]])
 
+# if (file.exists(fn)) 
+#   #Delete file if it exists
+#   file.remove(fn)
+
+
+radius <- 1500
+lc1500 <- lapply(1:4, function(x) {  # x <- 1
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
+  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_1500[[x]]), filename = f, overwrite = TRUE)
+  return(r)
+})
+lc1500_stacked <- stack(lc1500)  # stack
+
+# quick look at the results
+plot(lc2000_stacked)
+
+
+
 
 radius <- 2000
 lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "____", radius, ".tif")
-  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f)
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
+  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f, overwrite = TRUE)
   return(r)
 })
 lc2000_stacked <- stack(lc2000)  # stack
 
 # quick look at the results
 plot(lc2000_stacked)
+
+
+
+radius <- 2500
+lc2500 <- lapply(1:4, function(x) {  # x <- 1
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
+  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2500[[x]]), filename = f, overwrite = TRUE)
+  return(r)
+})
+lc2500_stacked <- stack(lc2500)  # stack
+
+# quick look at the results
+plot(lc2500_stacked)
+
 
 
 
@@ -503,7 +555,7 @@ geospaar::plot_noaxes(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean 
 ```{r, eval = FALSE}
 library(ggplot2)
 pts1 <- cbind(sample_points_f, raster::extract(lc_stack, sample_points_f))  # original lc
-pts4 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points
+pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points
 
 ggplot(pts4) + geom_point(aes(connect.,Amherst_CAPS2011connect.____2000 )) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
