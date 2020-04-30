@@ -421,32 +421,16 @@ fw_sum_2000 <- lapply(landcover_list,function(x){
 # as.matrix(fw_sum_2000[[1]])
 
 
-
-lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "____", diam, ".tif")
-  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f)
-  return(r)
-})
-
-
-lc2000_stack <- stack(lc2000)  # stack
-
-# quick look
-plot(lc2000_stack)
-
-
-
 radius <- 2000
 lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("./data/Amherst_CAPS2011", names(lc_stack)[x], "___", radius, ".tif")
-  r <- focal(lc_stack[[x]], w, filename = f)
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "____", radius, ".tif")
+  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f)
   return(r)
 })
 lc2000_stacked <- stack(lc2000)  # stack
 
 # quick look at the results
 plot(lc2000_stacked)
-
 
 
 #.................................................................
