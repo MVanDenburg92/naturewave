@@ -10,15 +10,17 @@ LazyData: true
 Depends:
     raster,
     sf,
-    tidyverse
+    tidyverse,
+    maps,
+    dplyr
 Imports:
     rgdal,
-    rgeos
+    rgeos,
+    nlme
 Suggests: 
     kableExtra,
     knitr, 
     prettydoc,
-    rmarkdown,
-    plotly
+    rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.0
