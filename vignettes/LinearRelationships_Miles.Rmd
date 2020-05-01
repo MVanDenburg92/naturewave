@@ -404,13 +404,8 @@ plot(st_geometry(sample_points_f), add = TRUE)
 ###
 #set the focal weight, since we are using a circle, set number to the radius of the circle (in units of CRS)
 #which you can conventientyly check using the check_landscape() function
-check_landscape(imperv_cropped)
-#cell resolution is 30 x 30
-fw_sum <- focalWeight(imperv_cropped, 3000, type='circle') 
-#have a look at the shape of the moving window
-fw_sum
+# #cell resolution is 30 x 30
 #...................................................................
-
 
 #Now let's apply the focalweight function to get a focal matrix for each .tif file in the landcover_list 
 
@@ -434,18 +429,8 @@ fw_sum_2500 <- lapply(landcover_list,function(x){
 
 
 
-
-# 
-# fw_sum_2000[[3]]
-# 
-# as.matrix(fw_sum_2000[[1]])
-
-# if (file.exists(fn)) 
-#   #Delete file if it exists
-#   file.remove(fn)
-
-
-radius <- 1500
+#Runs focal at a buffer weight of 1500 m radius
+radius1 <- 1500
 lc1500 <- lapply(1:4, function(x) {  # x <- 1
   f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_1500[[x]]), filename = f, overwrite = TRUE)
@@ -453,51 +438,81 @@ lc1500 <- lapply(1:4, function(x) {  # x <- 1
 })
 lc1500_stacked <- stack(lc1500)  # stack
 
-# quick look at the results
-plot(lc2000_stacked)
+# Plotting out the results
+tit1 <- "Map of 1500 (m) Buffer "
+
+lapply(1:4, function(x){
+  plot(lc1500_stacked[[x]], axes = FALSE, box = FALSE, main =  oce::titleCase(c(tit,gsub(".tif", "", basename(f[x])))))
+  plot(st_geometry(sample_points_f), add = TRUE)
+})
 
 
 
+#Runs focal at a buffer weight of 2000 m radius
 
-radius <- 2000
+radius2 <- 2000
 lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius2, ".tif")
   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f, overwrite = TRUE)
   return(r)
 })
 lc2000_stacked <- stack(lc2000)  # stack
 
-# quick look at the results
-plot(lc2000_stacked)
+
+tit2 <- "Map of 2000 (m) Buffer "
+
+# Plotting out the results
+lapply(1:4, function(x){
+  plot(lc2000_stacked[[x]], axes = FALSE, box = FALSE, main =  oce::titleCase(c(tit2,gsub(".tif", "", basename(f[x])))))
+  plot(st_geometry(sample_points_f), add = TRUE)
+})
 
 
 
-radius <- 2500
+#Runs focal at a buffer weight of 2500 m radius
+
+radius3 <- 2500
 lc2500 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius3, ".tif")
   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2500[[x]]), filename = f, overwrite = TRUE)
   return(r)
 })
 lc2500_stacked <- stack(lc2500)  # stack
 
-# quick look at the results
-plot(lc2500_stacked)
+
+
+tit3 <- "Map of 2500 (m) Buffer"
+
+# Plotting out the results
+lapply(1:4, function(x){
+  plot(lc2500_stacked[[x]], axes = FALSE, box = FALSE, main =  oce::titleCase(c(tit3, gsub(".tif", "", basename(f[x])))))
+  plot(st_geometry(sample_points_f), add = TRUE)
+})
+
+```
 
 
 
 
-
+```{r,include=FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 #ALTERNATIVE METHOD
 #.................................................................
 
 #Applying the window one file at a time 
+
+#
+crs(imperv_cropped)
+#cell resolution is 30 x 30
+fw_sum <- focalWeight(imperv_cropped, 3000, type='circle') 
+#have a look at the shape of the moving window
+fw_sum
 
 
 # apply moving window
 
 # If we apply fw to the focal function specifying the mean function then we get unexpected results.
 
-###imperv_cropped__focal_mean_unfixed <-  focal(imperv_cropped, w = fw_sum, na.rm = TRUE, fun = mean)
+imperv_cropped__focal_mean_unfixed <-  focal(imperv_cropped, w = fw_sum, na.rm = TRUE, fun = mean)
 
 
 # In fact to get the mean using the weighted matrix, you dont need to specify the function `mean`.Your focal weights sum to 1, such that you get the mean value when using 'fun=sum', which is the default for focal()
@@ -535,27 +550,29 @@ imperv_cropped__focal_mean_fixed <-  focal(imperv_cropped, w = fw_fixed, na.rm =
 #But what if we want to calculate the sum?
 # ##imperv_cropped__focal_sum <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = sum)
 
-
-
-
 # plot(imperv_cropped__focal, main="Circular MW SUM")
-plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unfixed") 
-plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")
-plot(imperv_cropped__focal, main ="Circular MW correct without specifying `fun = mean`")
+# plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unfixed") 
+
+geospaar::plot_noaxes(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")#plot single mw mean 
 plot(imperv_cropped, main ="Input Raster") #plot original
-plot(imperv_cropped__focal_sum, main ="Circular MW correct sum only ")
-
-
-geospaar::plot_noaxes(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")
+# plot(imperv_cropped__focal_sum, main ="Circular MW correct sum only ")
 
 ```
+
+
+
+
+
 
 
 ## Step 3: extract focal values to get predictors for points
 ```{r, eval = FALSE}
 library(ggplot2)
 pts1 <- cbind(sample_points_f, raster::extract(lc_stack, sample_points_f))  # original lc
-pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points
+
+pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points 1500
+pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points 2000
+pts_2500 <- cbind(pts1, raster::extract(lc2500_stacked, pts1)) # buffer points 2500
 
 ggplot(pts4) + geom_point(aes(connect.,Amherst_CAPS2011connect.____2000 )) + 
   geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
