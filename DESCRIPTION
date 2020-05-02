@@ -7,15 +7,18 @@ Description: Final Project Package for GEOG246-346 class.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Depends:
-    raster,
-    sf,
-    tidyverse,
-    maps,
-    dplyr
 Imports:
     rgdal,
     rgeos,
+    geospaar,
+    plotly,
+    sf,
+    maps,
+    lwgeom,
+    ggplot2,
+    raster,
+    tidyverse,
+    dplyr,
     nlme
 Suggests: 
     kableExtra,

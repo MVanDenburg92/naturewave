@@ -37,14 +37,12 @@ Setting up the package with the packages we plan to use
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Libraries
 library(tidyverse)
-library(tidyselect)
 library(nlme)
 library(ggplot2)
 library(dplyr)
-library(plotly)
-library(landscapemetrics)
-library(geospaar)
-
+library(raster)
+library(sf)
+library(lwgeom)
 # install.packages("USAboundaries")
 # install.packages("maps")
 #rnaturalearth
@@ -261,7 +259,7 @@ Road traffic
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 
-
+###[1]
 
 
 #import immperviousness raster file
@@ -341,8 +339,6 @@ sample_points_f %>% slice(1) %>% plot(col = "red", add=TRUE)
 
 
 
-
-
 # Loading all the files together at once into a list
 f <- dir("../external/data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif")
 landcover_list <- list(connect_cropped, imperv_cropped, structure_cropped, traffic_cropped)
@@ -358,6 +354,10 @@ names(landcover_list) <- gsub("tif", "", basename(f))
 # })
 # names(landcover) <- gsub(".tif", "", basename(f))
 
+
+
+
+#Scale the images subtracting the min values of each (the zero values) and then dividing by the max value possible in the images, 255. 
 lc_scaled <-lapply(landcover_list,function(x){
   (x- cellStats(x, min)) / 255
 })
@@ -432,17 +432,17 @@ fw_sum_2500 <- lapply(landcover_list,function(x){
 #Runs focal at a buffer weight of 1500 m radius
 radius1 <- 1500
 lc1500 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius, ".tif")
+  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius1, ".tif")
   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_1500[[x]]), filename = f, overwrite = TRUE)
   return(r)
 })
 lc1500_stacked <- stack(lc1500)  # stack
 
 # Plotting out the results
-tit1 <- "Map of 1500 (m) Buffer "
-
+tit1 <- "1500 (m) Buffer "
+par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
 lapply(1:4, function(x){
-  plot(lc1500_stacked[[x]], axes = FALSE, box = FALSE, main =  oce::titleCase(c(tit,gsub(".tif", "", basename(f[x])))))
+  plot(lc1500_stacked[[x]], axes = FALSE, box = FALSE, main =  toupper(c(tit1,gsub(".tif", "", basename(f[x])))))
   plot(st_geometry(sample_points_f), add = TRUE)
 })
 
@@ -459,11 +459,11 @@ lc2000 <- lapply(1:4, function(x) {  # x <- 1
 lc2000_stacked <- stack(lc2000)  # stack
 
 
-tit2 <- "Map of 2000 (m) Buffer "
-
 # Plotting out the results
+tit2 <- "2000 (m) Buffer "
+par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
 lapply(1:4, function(x){
-  plot(lc2000_stacked[[x]], axes = FALSE, box = FALSE, main =  oce::titleCase(c(tit2,gsub(".tif", "", basename(f[x])))))
+  plot(lc2000_stacked[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit2,gsub(".tif", "", basename(f[x])))))
   plot(st_geometry(sample_points_f), add = TRUE)
 })
 
@@ -480,21 +480,29 @@ lc2500 <- lapply(1:4, function(x) {  # x <- 1
 lc2500_stacked <- stack(lc2500)  # stack
 
 
-
-tit3 <- "Map of 2500 (m) Buffer"
-
 # Plotting out the results
+tit3 <- "2500 (m) Buffer"
+par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
 lapply(1:4, function(x){
-  plot(lc2500_stacked[[x]], axes = FALSE, box = FALSE, main =  oce::titleCase(c(tit3, gsub(".tif", "", basename(f[x])))))
+  plot(lc2500_stacked[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit3, gsub(".tif", "", basename(f[x])))))
   plot(st_geometry(sample_points_f), add = TRUE)
 })
+
+
+
+# 
+# writeRaster(lc2500_stacked[[1]], filename = "lc2500_connect.tif")
+# writeRaster(lc2500_stacked[[2]], filename = "lc2500_imperv.tif")
+# writeRaster(lc2500_stacked[[3]], filename = "lc2500_structure.tif")
+# writeRaster(lc2500_stacked[[4]], filename = "lc2500_traffic.tif")
+
+
 
 ```
 
 
 
-
-```{r,include=FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+```{r,include=FALSE, warning = FALSE, message = FALSE}
 #ALTERNATIVE METHOD
 #.................................................................
 
@@ -512,7 +520,7 @@ fw_sum
 
 # If we apply fw to the focal function specifying the mean function then we get unexpected results.
 
-imperv_cropped__focal_mean_unfixed <-  focal(imperv_cropped, w = fw_sum, na.rm = TRUE, fun = mean)
+imperv_cropped_focal_mean_unfixed <-  focal(imperv_cropped, w = fw_sum, na.rm = TRUE, fun = mean)
 
 
 # In fact to get the mean using the weighted matrix, you dont need to specify the function `mean`.Your focal weights sum to 1, such that you get the mean value when using 'fun=sum', which is the default for focal()
@@ -542,9 +550,11 @@ fw_sum[fw_sum > 0] <- 1
 
 fw_fixed <- fw_sum
 
-
+getwd()
 #recall the code we used above to try and get the mean....now featuring the fixed weighted matrix
-imperv_cropped__focal_mean_fixed <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = mean)
+
+
+imperv_cropped_focal_mean_fixed <-  focal(imperv_cropped, w = fw_fixed, na.rm = TRUE, fun = mean)
 
 
 #But what if we want to calculate the sum?
@@ -553,7 +563,7 @@ imperv_cropped__focal_mean_fixed <-  focal(imperv_cropped, w = fw_fixed, na.rm =
 # plot(imperv_cropped__focal, main="Circular MW SUM")
 # plot(imperv_cropped__focal_mean_unfixed, main ="Circular MW Mean Unfixed") 
 
-geospaar::plot_noaxes(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")#plot single mw mean 
+plot(imperv_cropped_focal_mean_fixed, main ="Circular MW Mean with `fun= mean` specified")#plot single mw mean 
 plot(imperv_cropped, main ="Input Raster") #plot original
 # plot(imperv_cropped__focal_sum, main ="Circular MW correct sum only ")
 
@@ -562,34 +572,21 @@ plot(imperv_cropped, main ="Input Raster") #plot original
 
 
 
-
-
-
-## Step 3: extract focal values to get predictors for points
+##Extract focal values to get predictors for points
 ```{r, eval = FALSE}
-library(ggplot2)
 pts1 <- cbind(sample_points_f, raster::extract(lc_stack, sample_points_f))  # original lc
 
-pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points 1500
+path_out <- '../inst/extdata'
+pts_1500 <- cbind(pts1, raster::extract(lc1500_stacked, pts1))# buffer points 1500
+write.csv(pts_1500, file.path(path_out,"fv_pts_1500.csv"), row.names = FALSE)
+
 pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points 2000
+write.csv(pts_2000, file.path(path_out,"fv_pts_2000.csv"), row.names = FALSE)
+
 pts_2500 <- cbind(pts1, raster::extract(lc2500_stacked, pts1)) # buffer points 2500
+write.csv(pts_2500, file.path(path_out,"fv_pts_2500.csv"), row.names = FALSE)
 
-ggplot(pts4) + geom_point(aes(connect.,Amherst_CAPS2011connect.____2000 )) + 
-  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
-ggplot(pts4) + geom_point(aes(imperv., Amherst_CAPS2011imperv.____2000)) + 
-  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
-ggplot(pts4) + geom_point(aes(structure., Amherst_CAPS2011structure.____2000)) + 
-  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
-ggplot(pts4) + geom_point(aes(traffic., Amherst_CAPS2011traffic.____2000)) + 
-  geom_abline(slope = 1) + xlim(0, 1) + ylim(0, 1)
 ```
-
-
-
-
-
-
-
 
 
 
@@ -785,6 +782,7 @@ write.csv(Imperv_connect_Struct_Traffic_NDSI, file = "Imperv_connect_Struct_Traf
 # sapply(1:6, function(x) { 
 # plot(st_geometry(buffs_extract[[x]]$sites), add = TRUE, col = NA, pch = 1)
 # })
+#----------------------------------------------------------------------------------------------------------
 
 
 #Manual plot out of the sites to confirm the buffers are working 
@@ -816,20 +814,18 @@ buff500_ninthsite <- buffs_extract[[1]]$sites %>% slice(9)
 
 
 
-plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied")
-plot(imperv_cropped__focal, main ="Circular MW correct without ")
+plot(imperv_cropped_focal_mean_fixed, main ="Circular MW Mean with function speficied")
 
 #plot out cropped imperv values with selected outlier values
 plot(imperv_cropped, ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
-plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff500_firstsite))
-buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
-plot(imperv_cropped__focal, main ="Circular MW correct without", ext = extent(buff500_firstsite))
+plot(imperv_cropped_focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff500_firstsite))
 buffs_extract[[1]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
 
-plot(imperv_cropped__focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff3000_secondsite))
+
+plot(imperv_cropped_focal_mean_fixed, main ="Circular MW Mean with function speficied", ext = extent(buff3000_secondsite))
 buffs_extract[[6]]$sites %>% plot(col = NA, add=TRUE, border = "red")
 
 
@@ -898,7 +894,7 @@ plot(imperv_cropped)
 lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 NDSI_Imperv_lm <- summary(lm_NDSI_Imperv)$r.squared
 
-lm_NDSI_Imperv
+plot(lm_NDSI_Imperv)
 NDSI_Imperv_lm
 
 cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Imperv)
@@ -952,8 +948,6 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traff
 lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
 ANT_Imperv_lm <- summary(lm_ANT_Imperv)$r.squared
 
-lm_NDSI_Imperv
-NDSI_Imperv_lm
 
 cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Imperv)
 
@@ -1077,7 +1071,7 @@ RSquaredPlot_NDSI <- ggplot(data = linear_rsquared) +
   labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
 
 plot(RSquaredPlot_NDSI)
-ggplotly(RSquaredPlot_NDSI)
+plotly::ggplotly(RSquaredPlot_NDSI)
 
 
 
@@ -1093,7 +1087,7 @@ RSquaredPlot_ANT <- ggplot(data = linear_rsquared) +
   labs(title = "Mean ANT ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
 
 plot(RSquaredPlot_ANT)
-ggplotly(RSquaredPlot_ANT)
+plotly::ggplotly(RSquaredPlot_ANT)
 
 
 
@@ -1109,7 +1103,7 @@ RSquaredPlot_Bio <- ggplot(data = linear_rsquared) +
   labs(title = "Mean BIO ~ R squared of metrics", x ="Focal Distance (meters)", y = "R squared of metrics") 
 
 plot(RSquaredPlot_Bio)
-ggplotly(RSquaredPlot_Bio)
+plotly::ggplotly(RSquaredPlot_Bio)
 
 
 ```
