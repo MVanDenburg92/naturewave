@@ -490,11 +490,12 @@ lapply(1:4, function(x){
 
 
 
-# 
-# writeRaster(lc2500_stacked[[1]], filename = "lc2500_connect.tif")
-# writeRaster(lc2500_stacked[[2]], filename = "lc2500_imperv.tif")
-# writeRaster(lc2500_stacked[[3]], filename = "lc2500_structure.tif")
-# writeRaster(lc2500_stacked[[4]], filename = "lc2500_traffic.tif")
+# Code to write out rasters for use with the randomforest prediction 
+
+writeRaster(lc2500_stacked[[1]], filename = "lc2500_connect.tif")
+writeRaster(lc2500_stacked[[2]], filename = "lc2500_imperv.tif")
+writeRaster(lc2500_stacked[[3]], filename = "lc2500_structure.tif")
+writeRaster(lc2500_stacked[[4]], filename = "lc2500_traffic.tif")
 
 
 
