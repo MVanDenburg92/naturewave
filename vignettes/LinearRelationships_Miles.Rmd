@@ -366,10 +366,9 @@ lc_stack <- stack(lc_scaled)
 #Plot out all of the images at once
 plot(lc_stack)
 
-
-#plot out the Connect layer
-plot(lc_stack[[1]], main = "connect")
-plot(st_geometry(sample_points_f), add = TRUE) 
+# #plot out the Connect layer
+# plot(lc_stack[[1]], main = "connect")
+# plot(st_geometry(sample_points_f), add = TRUE) 
 
 
 
