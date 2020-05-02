@@ -261,79 +261,83 @@ Road traffic
 
 ###[1]
 
-
 #import immperviousness raster file
 imperv <- raster("../external/data/Amherst_CAPS2011/imperv.tif", crs = crs(sample_points_f))
-plot(imperv)
-plot(sample_points_f, col = "red", add = TRUE)
-plot(ma_crop, add = TRUE)
-st_crs(imperv)
 
-#Crop Imperv to AOI and plot
+##Plot code to test tif
+# plot(imperv)
+# plot(sample_points_f, col = "red", add = TRUE)
+# plot(ma_crop, add = TRUE)
+# st_crs(imperv)
+
+#Crop Imperv to AOI and plot  (code commented out)
 imperv_cropped <- crop(imperv, y = ma_crop)
-plot(imperv_cropped)
-plot(sample_points_f, col = "red", add = TRUE)
+# plot(imperv_cropped)
+# plot(sample_points_f, col = "red", add = TRUE)
 
 
 
 #import connectedness raster file
 
 connect <- raster("../external/data/Amherst_CAPS2011/connect.tif", crs = crs(sample_points_f))
-plot(connect)
-plot(sample_points_f, col = "red", add = TRUE)
-plot(ma_crop, add = TRUE)
-st_crs(connect)
+
+##Plot code to test tif
+# plot(connect)
+# plot(sample_points_f, col = "red", add = TRUE)
+# plot(ma_crop, add = TRUE)
+# st_crs(connect)
 
 
-#Crop connect to AOI and plot
+#Crop connect to AOI and plot  (code commented out)
 connect_cropped <- crop(connect, y = ma_crop)
-plot(connect_cropped)
-plot(sample_points_f, col = "red", add = TRUE)
+# plot(connect_cropped)
+# plot(sample_points_f, col = "red", add = TRUE)
 
 
 #import structure raster file
 structure <- raster("../external/data/Amherst_CAPS2011/structure.tif", crs = crs(sample_points_f))
-plot(structure)
-plot(sample_points_f, col = "red", add = TRUE)
-plot(AOI, add = TRUE)
-st_crs(structure)
 
-#Crop structure to AOI and plot
+##Plot code to test tif
+# plot(structure)
+# plot(sample_points_f, col = "red", add = TRUE)
+# plot(AOI, add = TRUE)
+# st_crs(structure)
+
+#Crop structure to AOI and plot  (code commented out)
 structure_cropped <- crop(structure, y = ma_crop)
-plot(structure_cropped)
-plot(sample_points_f, col = "red", add = TRUE)
+# plot(structure_cropped)
+# plot(sample_points_f, col = "red", add = TRUE)
 
 
 # #Road traffic traffic Measures the intensity of road traffic (based on measured road traffic rates) in the neighborhood surrounding the focal cell, based on a logistic function of distance.
 # Data source: landcover, traffic rates
 
-
-
 #import connectedness raster file
 traffic <- raster("../external/data/Amherst_CAPS2011/traffic.tif", crs = crs(sample_points_f))
-plot(traffic)
-plot(sample_points_f, col = "green", add = TRUE)
-plot(AOI, add = TRUE)
-st_crs(traffic)
+##Plot code to test tif
+# plot(traffic)
+# plot(sample_points_f, col = "green", add = TRUE)
+# plot(AOI, add = TRUE)
+# st_crs(traffic)
 
 
-#Crop connect to AOI and plot
+#Crop connect to AOI and plot (code commented out)
 traffic_cropped <- crop(traffic, y = ma_crop)
-plot(traffic_cropped)
-plot(sample_points_f, col = "green", add = TRUE)
+# plot(traffic_cropped)
+# plot(sample_points_f, col = "green", add = TRUE)
 
 
 
 ###Example plot of data
-
-par(mar = c(0, 0, 1, 0) + .1)
-plot(structure, c, axes = FALSE, nr = 4)
-plot(sample_points_f, col = "red", add=TRUE)
-
-#Example of plotting out a single site
-par(mar = c(0, 0, 1, 0) + .1)
-plot(structure, c, axes = FALSE, nr = 4)
-sample_points_f %>% slice(1) %>% plot(col = "red", add=TRUE)
+# 
+# par(mar = c(0, 0, 1, 0) + .1)
+# plot(structure, c, axes = FALSE, nr = 4)
+# plot(sample_points_f, col = "red", add=TRUE)
+# 
+# #Example of plotting out a single site
+# par(mar = c(0, 0, 1, 0) + .1)
+# plot(structure, c, axes = FALSE, nr = 4)
+# sample_points_f %>% slice(1) %>% plot(col = "red", add=TRUE)
 
 
 
@@ -351,8 +355,6 @@ names(landcover_list) <- gsub("tif", "", basename(f))
 #   r
 # })
 # names(landcover) <- gsub(".tif", "", basename(f))
-
-
 
 
 #Scale the images subtracting the min values of each (the zero values) and then dividing by the max value possible in the images, 255. 
@@ -374,7 +376,7 @@ plot(lc_stack)
 
 ## Calculate focal mean stat at a weight of 3000 for each variable of interest--imperviousness, traffic, and connectedness. 
 
-```{r,include=FALSE, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE}
 
 #Sources for understanding focal window
 # http://r-sig-geo.2731867.n2.nabble.com/Raster-package-Focal-sum-in-circles-td7587683.html
@@ -575,7 +577,7 @@ plot(imperv_cropped, main ="Input Raster") #plot original
 
 
 ##Extract focal values to get predictors for points
-```{r, include=FALSE, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE}
 pts1 <- cbind(sample_points_f, raster::extract(lc_stack, sample_points_f))  # original lc
 
 path_out <- '../inst/extdata'
@@ -882,13 +884,13 @@ write.csv(Imperv_connect_Struct_Traffic_NDSI, file = "Imperv_connect_Struct_Traf
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #NDSI vs Impervious
-lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 NDSI_Imperv_lm <- summary(lm_NDSI_Imperv)$r.squared
 
 plot(lm_NDSI_Imperv)
 NDSI_Imperv_lm
 
-cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Imperv)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traffic_NDSI$Imperv)
 
 # #Obtain numbers for NDVI at Buffer 2000
 # cor_2000_NDVI <- lm_NDSI_NDVI[["2000"]][["model"]][["MEAN_NDVI"]]
@@ -899,10 +901,10 @@ cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Imperv)
 
 #NDSI vs Connectedness
 
-lm_NDSI_Connect <- lmList(NDSI ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_NDSI_Connect <- lmList(NDSI ~ Connectdness | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 NDSI_Connect_lm <-summary(lm_NDSI_Connect)$r.squared
 
-cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Connectdness)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traffic_NDSI$Connectdness)
 
 
 # #Obtain numbers for NDBI at Buffer 2000
@@ -912,10 +914,10 @@ cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Connectd
 
 ##NDSI vs Structuredness
 
-lm_NDSI_Structure <- lmList(NDSI ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_NDSI_Structure <- lmList(NDSI ~ Structure | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 NDSI_Structure_lm <-summary(lm_NDSI_Structure)$r.squared
 
-cor(x = Imperv_connect_Struct_NDSI$NDSI, y = Imperv_connect_Struct_NDSI$Structure)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traffic_NDSI$Structure)
 
 
 
@@ -936,11 +938,11 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, y = Imperv_connect_Struct_Traff
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Anthrophony vs Impervious
-lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 ANT_Imperv_lm <- summary(lm_ANT_Imperv)$r.squared
 
 
-cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Imperv)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony, y = Imperv_connect_Struct_Traffic_NDSI$Imperv)
 
 # #Obtain numbers for NDVI at Buffer 2000
 # cor_2000_NDVI <- lm_NDSI_NDVI[["2000"]][["model"]][["MEAN_NDVI"]]
@@ -951,10 +953,10 @@ cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$I
 
 #Anthrophony vs Connectedness
 
-lm_ANT_Connect <- lmList(Anthrophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_ANT_Connect <- lmList(Anthrophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 ANT_Connect_lm <-summary(lm_ANT_Connect)$r.squared
 
-cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Connectdness)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony, y = Imperv_connect_Struct_Traffic_NDSI$Connectdness)
 
 
 # #Obtain numbers for NDBI at Buffer 2000
@@ -964,10 +966,10 @@ cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$C
 
 ##Anthrophony vs Structuredness
 
-lm_ANT_Structure <- lmList(Anthrophony ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_ANT_Structure <- lmList(Anthrophony ~ Structure | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 ANT_Structure_lm <-summary(lm_ANT_Structure)$r.squared
 
-cor(x = Imperv_connect_Struct_NDSI$Anthrophony, y = Imperv_connect_Struct_NDSI$Structure)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony, y = Imperv_connect_Struct_Traffic_NDSI$Structure)
 
 
 ##Anthrophony vs Traffic
@@ -984,13 +986,13 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony, y = Imperv_connect_Struc
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Biophony vs Impervious
 
-lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 BIO_Imperv_lm <- summary(lm_BIO_Imperv)$r.squared
 
 lm_BIO_Imperv
 BIO_Imperv_lm
 
-cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Imperv)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony, y = Imperv_connect_Struct_Traffic_NDSI$Imperv)
 
 # #Obtain numbers for NDVI at Buffer 2000
 # cor_2000_NDVI <- lm_NDSI_NDVI[["2000"]][["model"]][["MEAN_NDVI"]]
@@ -1001,10 +1003,10 @@ cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Impe
 
 #Biophony vs Connectedness
 
-lm_BIO_Connect <- lmList(Biophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_BIO_Connect <- lmList(Biophony ~ Connectdness | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 BIO_Connect_lm <-summary(lm_BIO_Connect)$r.squared
 
-cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Connectdness)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony, y = Imperv_connect_Struct_Traffic_NDSI$Connectdness)
 
 
 # #Obtain numbers for NDBI at Buffer 2000
@@ -1014,10 +1016,10 @@ cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Conn
 
 ##Biophony vs Structuredness
 
-lm_BIO_Structure <- lmList(Biophony ~ Structure | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE)
+lm_BIO_Structure <- lmList(Biophony ~ Structure | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
 BIO_Structure_lm <-summary(lm_BIO_Structure)$r.squared
 
-cor(x = Imperv_connect_Struct_NDSI$Biophony, y = Imperv_connect_Struct_NDSI$Structure)
+cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony, y = Imperv_connect_Struct_Traffic_NDSI$Structure)
 
 
 
@@ -1036,7 +1038,7 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony, y = Imperv_connect_Struct_T
 Code to create linear r squared dataframe from the rsquared summaries above
 
 ```{r, warning = FALSE, message = FALSE}
-# as. Buffer <- Imperv_connect_Struct_NDSI$Buffer
+# as. Buffer <- Imperv_connect_Struct_Traffic_NDSI$Buffer
 
 Buffer <- c(500, 1000,1500,2000,2500,3000)
 
@@ -1110,7 +1112,7 @@ plotly::ggplotly(RSquaredPlot_Bio)
 # <!-- ## Code to create linear correlations between NDSI and Imperviousness, connectedness, and structure -->
 # <!-- ```{r} -->
 # <!-- #NDSI vs Impervious -->
-# <!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE) -->
+# <!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE) -->
 # <!-- NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared -->
 # 
 # <!-- lm_NDSI_NDVI -->
@@ -1125,7 +1127,7 @@ plotly::ggplotly(RSquaredPlot_Bio)
 # <!-- ## Code to create linear correlations between NDSI and connectedness, and structure -->
 # <!-- ```{r} -->
 # <!-- #NDSI vs Impervious -->
-# <!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_NDSI, pool = FALSE) -->
+# <!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE) -->
 # <!-- NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared -->
 # 
 # <!-- lm_NDSI_NDVI -->
