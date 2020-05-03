@@ -21,6 +21,7 @@ Imports:
     dplyr,
     caTools, 
     randomForest,
+    leaflet,
     nlme
 Suggests: 
     kableExtra,
