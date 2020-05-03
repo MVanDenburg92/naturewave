@@ -1,0 +1,319 @@
+---
+title: "Landscape Metrics Example Code"
+output: html_notebook
+---
+
+
+```{r, include=FALSE, warning = FALSE, message = FALSE}
+
+# 
+# <!-- ## Code to create linear correlations between NDSI and Imperviousness, connectedness, and structure -->
+# <!-- ```{r} -->
+# <!-- #NDSI vs Impervious -->
+# <!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE) -->
+# <!-- NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared -->
+# 
+# <!-- lm_NDSI_NDVI -->
+# <!-- NDSI_NDVI_lm -->
+# 
+# <!-- cor(x = DF$NDSI_select, y = DF$MEAN_NDVI) -->
+# 
+# <!-- ``` -->
+# 
+# 
+# 
+# <!-- ## Code to create linear correlations between NDSI and connectedness, and structure -->
+# <!-- ```{r} -->
+# <!-- #NDSI vs Impervious -->
+# <!-- lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE) -->
+# <!-- NDSI_NDVI_lm <- summary(lm_NDSI_NDVI)$r.squared -->
+# 
+# <!-- lm_NDSI_NDVI -->
+# <!-- NDSI_NDVI_lm -->
+# 
+# <!-- cor(x = DF$NDSI_select, y = DF$MEAN_NDVI) -->
+# 
+# <!-- ``` -->
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# <!-- The landscapemetrics package has a function designed for calculations of landscape metrics for a given buffer. -->
+# <!-- It is called sample_lsm() and it expects, at least three input arguments – a raster, a vector (points), and a buffer size. As a default, it calculates all of the available metrics in a square buffer, where buffer size is the side-length in map units (e.g. meters). -->
+# 
+# <!-- ```{r} -->
+# 
+# <!-- ##> Calculate percentage of landscape area and edge metric class lsm_c_pland  -->
+# <!-- my_metric_pland = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_pland") -->
+# <!-- my_metric_pland -->
+# 
+# <!-- #Create new field called 'SiteName' using the site names from sample_points_f$Site -->
+# 
+# <!-- my_metric_pland <- my_metric_pland %>%  -->
+# <!--   mutate( -->
+# <!--     SiteName = case_when( -->
+# <!--       grepl("1", plot_id) ~ "Leadmine Mountain", -->
+# <!--       grepl("2", plot_id) ~ "Braod Meadow Brook",  -->
+# <!--       grepl("3", plot_id) ~ "Burncoat Pond",  -->
+# <!--       grepl("4", plot_id) ~ "Pierpoint Meadow", -->
+# <!--       grepl("5", plot_id) ~ "Rutland Brook",  -->
+# <!--       grepl("6", plot_id) ~ "Cooks Canyon",  -->
+# <!--       grepl("7", plot_id) ~ "Eagle Lake", -->
+# <!--       grepl("8", plot_id) ~ "Wachusett Meadow",  -->
+# <!--       grepl("9", plot_id) ~ "Lake Wampanoag",  -->
+# <!--       grepl("10", plot_id) ~ "Flat Rocks", -->
+# <!--       grepl("11", plot_id) ~ "Lincoln Woods",  -->
+# <!--     ) -->
+# <!--   ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside) -->
+# 
+# 
+# 
+# 
+# <!-- #Calculate Number of patches of class (Aggregation metric) -->
+# 
+# <!-- my_metric_lsm_c_np = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_np") -->
+# <!-- my_metric_lsm_c_np -->
+# 
+# <!-- #Create new field called 'SiteName' using the site names from sample_points_f$Site -->
+# 
+# <!-- my_metric_lsm_c_np <- my_metric_lsm_c_np %>%  -->
+# <!--   mutate( -->
+# <!--     SiteName = case_when( -->
+# <!--       grepl("1", plot_id) ~ "Leadmine Mountain", -->
+# <!--       grepl("2", plot_id) ~ "Braod Meadow Brook",  -->
+# <!--       grepl("3", plot_id) ~ "Burncoat Pond",  -->
+# <!--       grepl("4", plot_id) ~ "Pierpoint Meadow", -->
+# <!--       grepl("5", plot_id) ~ "Rutland Brook",  -->
+# <!--       grepl("6", plot_id) ~ "Cooks Canyon",  -->
+# <!--       grepl("7", plot_id) ~ "Eagle Lake", -->
+# <!--       grepl("8", plot_id) ~ "Wachusett Meadow",  -->
+# <!--       grepl("9", plot_id) ~ "Lake Wampanoag",  -->
+# <!--       grepl("10", plot_id) ~ "Flat Rocks", -->
+# <!--       grepl("11", plot_id) ~ "Lincoln Woods",  -->
+# <!--     ) -->
+# <!--   ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside) -->
+# 
+# <!-- #Check that the right amount of names appear = 11 -->
+# <!-- length(unique(my_metric_pland_All$SiteName)) -->
+# 
+# 
+# <!-- ``` -->
+# 
+# 
+# 
+# <!-- # Example calculations for landscape metrics -->
+# <!-- ```{r} -->
+# 
+# <!-- #LandScape Calculations -->
+# 
+# <!-- # general structure -->
+# <!-- lsm_() -->
+# 
+# <!-- # Patch level -->
+# <!-- ## lsm_p_"metric" -->
+# <!-- lsm_p_enn() -->
+# 
+# <!-- # Class level -->
+# <!-- ## lsm_c_"metric" -->
+# <!-- lsm_c_enn() -->
+# 
+# <!-- # Landscape level -->
+# <!-- ## lsm_p_"metric" -->
+# <!-- lsm_l_enn() -->
+# 
+# 
+# 
+# <!-- # calculate for example the Euclidean nearest-neighbor distance on patch level -->
+# <!-- lsm_p_enn(my_aoi_raster) -->
+# 
+# 
+# <!-- #As landscapemetrics are known to be scale dependent, it becomes necessary to use a moving window approach to deal with this -->
+# <!-- #The moving window assigns to each focal cell in the landscape the metric value of its local neighborhood specified by a neighborhood matrix. -->
+# <!-- #The resulting raster describes the landscape in regard to the local variability of the chosen metricc. -->
+# <!-- #Within landscapemetrics a moving window approach can be used by using window_lsm() -->
+# <!-- window <- matric(1, nrow  =5, ncol = 5) -->
+# <!-- window_lsm(x, window = window, what = c("lsm_l_pr", "lsm_l_joinent")) -->
+# 
+# 
+# <!-- ``` -->
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# <!-- #2 apply circular moving window to continuous data -->
+# <!-- ### -->
+# <!-- #set the focal weight, since we are using a circle, set number to the radius of the circle (in units of CRS) -->
+# 
+# <!-- #### -->
+# <!-- #### -->
+# 
+# 
+# <!-- # show_patches(imperv_cropped) -->
+# <!-- #  -->
+# <!-- #  -->
+# <!-- #  -->
+# <!-- # metric_struct_core <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE) -->
+# <!-- #  -->
+# <!-- # metric_struct_core -->
+# <!-- #  -->
+# <!-- # plot(structure_cropped) -->
+# <!-- #  -->
+# <!-- #  -->
+# <!-- #  -->
+# <!-- # metric_connect_core <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE) -->
+# <!-- #  -->
+# <!-- # metric_connect_core -->
+# <!-- #  -->
+# <!-- # plot(connect_cropped) -->
+# <!-- #  -->
+# <!-- #  -->
+# <!-- #  -->
+# <!-- # metric_traffic_core <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_l_core_mn", verbose = TRUE, progress = TRUE) -->
+# <!-- #  -->
+# <!-- # metric_traffic_core -->
+# <!-- #  -->
+# <!-- # plot(traffic_cropped) -->
+```
+
+
+```{r, include=FALSE, warning = FALSE, message = FALSE}
+
+# metric_imperv <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_imperv
+# 
+# 
+# 
+# metric_imperv_pd <- scale_sample(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_pd", verbose = TRUE, progress = TRUE)
+# 
+# metric_imperv_pd
+# 
+# 
+# spatialize_lsm(imperv_cropped)
+# 
+# 
+# 
+# metric_imperv_NP <- sample_lsm(landscape = imperv_cropped, y = samp_matrix, shape = "circle", size = 500, level = "landscape", what = "lsm_l_np", verbose = TRUE, progress = TRUE)
+# 
+# metric_imperv_NP
+# 
+# 
+# 
+# Number of Patches (NP)
+# 
+# 
+# 
+# 
+# metric_struct <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_struct
+# 
+# 
+# metric_struct_pd <- scale_sample(landscape = structure_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_struct_pd
+# 
+# 
+# 
+# 
+# metric_connect_pd <- scale_sample(landscape = connect_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_connect_pd
+# 
+# 
+# 
+# metric_traffic_pd <- scale_sample(landscape = traffic_cropped, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "landscape", what = "lsm_l_area_mn", verbose = TRUE, progress = TRUE)
+# 
+# metric_traffic_pd
+
+
+#Drop rows with NA in the values field
+# 
+# metric3 %>% drop_na(value)
+
+# The output data frame has two rows for each grid cell; therefore, 
+# if we want to connect the result with a spatial object, we need to reformat it.
+# It can be done with the pivot_wider() function from the tidyr package.
+
+# library(tidyr)
+# my_metric3 <- pivot_wider(metric3, names_from = metric, values_from = value)
+# my_metric3
+# 
+
+
+
+
+#Create new field called 'SiteName' using the site names from sample_points_f$Site, and drop the id field with NA values
+#Used anchors. ^ Asserts that we are at the start. $ Asserts that we are at the end.
+
+# my_metric_pland_All <- my_metric_pland_All %>% 
+#   mutate(
+#     SiteName = case_when(
+#       grepl("^1$", plot_id) ~ "Leadmine Mountain",
+#       grepl("^2$", plot_id) ~ "Braod Meadow Brook", 
+#       grepl("^3$", plot_id) ~ "Burncoat Pond", 
+#       grepl("^4$", plot_id) ~ "Pierpoint Meadow",
+#       grepl("^5$", plot_id) ~ "Rutland Brook", 
+#       grepl("^6$", plot_id) ~ "Cooks Canyon", 
+#       grepl("^7$", plot_id) ~ "Eagle Lake",
+#       grepl("^8$", plot_id) ~ "Wachusett Meadow", 
+#       grepl("^9$", plot_id) ~ "Lake Wampanoag", 
+#       grepl("^10$", plot_id) ~ "Flat Rocks",
+#       grepl("^11$", plot_id) ~ "Lincoln Woods", 
+#     )
+#   ) %>% dplyr::select(layer, level, ClassName, class, metric, value, SiteName, size, plot_id, percentage_inside)
+# 
+# 
+
+
+```
+
+
+
+```{r,include=FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+
+#Create matrix of points from geometry field of our sample points to utilize with landscapemetrics
+samp_matrix <- unlist(matrix(sample_points_f$geometry, ncol = 2))
+samp_matrix <- matrix(data = samp_matrix, ncol = 2, byrow = TRUE)[-12,]
+
+# calculate landscape metrics on many different buffer sizes at the same time.
+# You just need to select what sizes you are interested in and use the sample_lsm() function inside a map_dfr() function.
+
+
+# Calculates the percentage landcover metric for the raster file. 
+#To calculate metrics in a buffer around sample points, sample_lsm() can be used, allowing us to specify shape (circle, square, or restangle) and the area of buffers around the sample points, and then calculates the specified metrics
+
+
+
+# # Details
+# AREAMN = mean(AREA[patchij ])
+# where AREA[patchij ] is the area of each patch in hectares
+# AREA_MN is an ’Area and Edge metric’. The metric summarises the landscape as the mean of all
+# patch in the landscape. The metric is a simple way to describe the composition of the landscape.
+# Especially together with the total landscape area (lsm_l_ta), it can also give an an idea of patch
+# structure (e.g. many small patches vs. few larges patches).
+# 
+# 
+# 
+# P D =N/A∗ 10000 ∗ 100
+# where N is the number of patches and A is the total landscape area in square meters.
+# PD is an ’Aggregation metric’. It describes the fragmentation the landscape, however, does not
+# necessarily contain information about the configuration or composition of the landscape. In contrast
+# to lsm_l_np it is standardized to the area and comparisons among landscapes with different total
+# area are possible.
+
+
+```
+
+
