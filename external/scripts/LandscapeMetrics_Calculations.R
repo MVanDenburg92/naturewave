@@ -19,7 +19,7 @@ library(leaflet) # for interactive maps
 #Import the data
 
 
-##Import Full Raster Shape File 
+##Import Full Raster Shape File
 setwd("D:/RA-withSangermano/SpatialData/NOAA-CCAP/")
 my_raster = raster("D:/RA-withSangermano/SpatialData/NOAA-CCAP/MA_Wor_CCAP2016.tif")
 my_raster
@@ -52,7 +52,7 @@ sample_points_f <- st_read("sample_sites_projected.shp")
 sample_points_f
 
 
-##Examine geometry list-column 
+##Examine geometry list-column
 st_geometry(sample_points_f)
 
 ##Examine attributes of sample points
@@ -71,20 +71,20 @@ AOI <- st_read("AOI.shp")
 AOI
 
 
-#Examines coordinate system of the raster 
+#Examines coordinate system of the raster
 st_crs(my_raster)
 inMemory(my_raster)
 
-#Examines coordinate system of the aoimassclass raster 
+#Examines coordinate system of the aoimassclass raster
 st_crs(my_aoi_raster)
 inMemory(my_aoi_raster)
 
-#Examines coordinate system of the sample points 
+#Examines coordinate system of the sample points
 st_crs(sample_points_f)
 inMemory(sample_points_f)
 
 
-#Examines coordinate system of the sample points projected to NAD 1983 Albers 
+#Examines coordinate system of the sample points projected to NAD 1983 Albers
 st_crs(sample_points_Albers)
 inMemory(sample_points_Albers)
 
@@ -94,13 +94,13 @@ inMemory(sample_points_Albers)
 
 
 #Change crs to be of same system for Sample_points_f and my_aoi_raster
-# 
+#
 # sample_points_f <- st_transform(x = sample_points_f, crs = st_crs(my_raster))
 # st_crs(sample_points_f)
-# 
+#
 # my_aoi_raster <- st_transform(x = my_aoi_raster, crs = st_crs(my_raster))
 # st_crs(my_aoi_raster)
-# 
+#
 # my_aoi_raster_proj <- projectRaster(my_aoi_raster, crs = "+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs")
 
 #------------------------------------------------------------------------------------------
@@ -115,27 +115,27 @@ plot(sample_points_f, col = "blue", add=TRUE)
 #   geom_raster(data = my_aoi_raster$aoi_massclass,
 #               aes(x = x, y = y,
 #                   fill = my_aoi_raster$aoi_massclass)) +
-#   scale_fill_gradientn(name = "Elevation", colors = terrain.colors(10)) + 
+#   scale_fill_gradientn(name = "Elevation", colors = terrain.colors(10)) +
 #   coord_quickmap()
 
 
-head(sample_points_f, n = 4) 
+head(sample_points_f, n = 4)
 sample_points_f
 my_aoi_raster
 
 
 #Creating a polygon layer for the raster.  same parameters as the AOI file
 
-pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.69707031707116, 42.69707031707116, 42.02124129930544), 
+pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.69707031707116, 42.69707031707116, 42.02124129930544),
                              y = c(-71.53416964017146, -71.53416964017146, -72.30321260892146, -72.30321260892146, -71.53416964017146))))
 
 #------------------------------------------------------------------------------------------
 
 
-#Calculating metrics 
+#Calculating metrics
 
 
-#Sources: 
+#Sources:
 #https://www.r-bloggers.com/how-to-calculate-landscape-metrics-for-local-landscapes/
 #https://r-spatialecology.github.io/landscapemetrics/reference/list_lsm.html
 #https://r-spatialecology.github.io/landscapemetrics/
@@ -145,26 +145,26 @@ pol <- st_polygon(list(cbind(x = c(42.02124129930544, 42.69707031707116, 42.6970
 
 
 
-##> Calculate percentage of landscape area and edge metric class lsm_c_pland 
+##> Calculate percentage of landscape area and edge metric class lsm_c_pland
 my_metric_pland = sample_lsm(my_aoi_raster, sample_points_f, shape = "circle", size = 500, level = "class", what = "lsm_c_pland")
 my_metric_pland
 
 #Create new field called 'SiteName' using the site names from sample_points_f$Site
 
-my_metric_pland <- my_metric_pland %>% 
+my_metric_pland <- my_metric_pland %>%
   mutate(
     SiteName = case_when(
       grepl("1", plot_id) ~ "Leadmine Mountain",
-      grepl("2", plot_id) ~ "Braod Meadow Brook", 
-      grepl("3", plot_id) ~ "Burncoat Pond", 
+      grepl("2", plot_id) ~ "Braod Meadow Brook",
+      grepl("3", plot_id) ~ "Burncoat Pond",
       grepl("4", plot_id) ~ "Pierpoint Meadow",
-      grepl("5", plot_id) ~ "Rutland Brook", 
-      grepl("6", plot_id) ~ "Cooks Canyon", 
+      grepl("5", plot_id) ~ "Rutland Brook",
+      grepl("6", plot_id) ~ "Cooks Canyon",
       grepl("7", plot_id) ~ "Eagle Lake",
-      grepl("8", plot_id) ~ "Wachusett Meadow", 
-      grepl("9", plot_id) ~ "Lake Wampanoag", 
+      grepl("8", plot_id) ~ "Wachusett Meadow",
+      grepl("9", plot_id) ~ "Lake Wampanoag",
       grepl("10", plot_id) ~ "Flat Rocks",
-      grepl("11", plot_id) ~ "Lincoln Woods", 
+      grepl("11", plot_id) ~ "Lincoln Woods",
     )
   ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside)
 
@@ -178,27 +178,27 @@ my_metric_lsm_c_np
 
 #Create new field called 'SiteName' using the site names from sample_points_f$Site
 
-my_metric_lsm_c_np <- my_metric_lsm_c_np %>% 
+my_metric_lsm_c_np <- my_metric_lsm_c_np %>%
   mutate(
     SiteName = case_when(
       grepl("1", plot_id) ~ "Leadmine Mountain",
-      grepl("2", plot_id) ~ "Braod Meadow Brook", 
-      grepl("3", plot_id) ~ "Burncoat Pond", 
+      grepl("2", plot_id) ~ "Braod Meadow Brook",
+      grepl("3", plot_id) ~ "Burncoat Pond",
       grepl("4", plot_id) ~ "Pierpoint Meadow",
-      grepl("5", plot_id) ~ "Rutland Brook", 
-      grepl("6", plot_id) ~ "Cooks Canyon", 
+      grepl("5", plot_id) ~ "Rutland Brook",
+      grepl("6", plot_id) ~ "Cooks Canyon",
       grepl("7", plot_id) ~ "Eagle Lake",
-      grepl("8", plot_id) ~ "Wachusett Meadow", 
-      grepl("9", plot_id) ~ "Lake Wampanoag", 
+      grepl("8", plot_id) ~ "Wachusett Meadow",
+      grepl("9", plot_id) ~ "Lake Wampanoag",
       grepl("10", plot_id) ~ "Flat Rocks",
-      grepl("11", plot_id) ~ "Lincoln Woods", 
+      grepl("11", plot_id) ~ "Lincoln Woods",
     )
   ) %>% dplyr::select(layer, level, class, id, metric, value, SiteName, plot_id, percentage_inside)
 
 #Check that the right amount of names appear = 11
 length(unique(my_metric_pland_All$SiteName))
 
-#Create buffers for the points for visualization purposes and plot them against the sample points 
+#Create buffers for the points for visualization purposes and plot them against the sample points
 buffs <- construct_buffer(coords = samp_matrix, shape = "circle", size = 3000)
 
 par(mar = c(0, 0, 1, 0) + .1)
@@ -212,7 +212,7 @@ plot(buffs, col = "blue", add=TRUE)
 # Creating sample buffers using scale_sample against sample_points_f
 # https://r-spatialecology.github.io/landscapemetrics/reference/scale_sample.html
 
-##> Calculate percentage of landscape area and edge metric class lsm_c_pland for all BUFFERS 
+##> Calculate percentage of landscape area and edge metric class lsm_c_pland for all BUFFERS
 
 my_metric_pland_All <- scale_sample(landscape = my_aoi_raster, y = samp_matrix, shape = "circle", size = 500, max_size = 3000, level = "class", what = "lsm_c_pland", verbose = TRUE, progress = TRUE)
 
@@ -221,7 +221,7 @@ my_metric_pland_All
 #Create new field called 'ClassName' using the class names from aoi_massclass
 #Used anchors. ^ Asserts that we are at the start. $ Asserts that we are at the end.
 
-my_metric_pland_All <- my_metric_pland_All %>% 
+my_metric_pland_All <- my_metric_pland_All %>%
   mutate(
     ClassName = case_when(
       grepl("^2$", class) ~ "Developed, High Intensity",
@@ -248,13 +248,13 @@ my_metric_pland_All <- my_metric_pland_All %>%
 #Check that the right amount of classes appear = 18
 length(unique(my_metric_pland_All$ClassName))
 ClassNames <- list(unique(my_metric_pland_All$ClassName))
-ClassNames[[1]][15] <- "Unconsolidated Shore" 
-ClassNames[[1]][16] <- "Bare Land" 
-ClassNames[[1]][17] <- "Open Water"                    
-ClassNames[[1]][18] <- "Palustrine Aquatic Bed" 
+ClassNames[[1]][15] <- "Unconsolidated Shore"
+ClassNames[[1]][16] <- "Bare Land"
+ClassNames[[1]][17] <- "Open Water"
+ClassNames[[1]][18] <- "Palustrine Aquatic Bed"
 ClassNames
 # mutate(ClassName = ifelse(class == 2, "Developed, High Intensity", class),
-#        country = ifelse(class == 3, "Zambia", "ZMB", country)) %>% 
+#        country = ifelse(class == 3, "Zambia", "ZMB", country)) %>%
 #   dplyr::select(layer, level, ClassName, class, metric, value, size, plot_id, percentage_inside)
 
 
@@ -263,20 +263,20 @@ ClassNames
 #Create new field called 'SiteName' using the site names from sample_points_f$Site, and drop the id field with NA values
 #Used anchors. ^ Asserts that we are at the start. $ Asserts that we are at the end.
 
-my_metric_pland_All <- my_metric_pland_All %>% 
+my_metric_pland_All <- my_metric_pland_All %>%
   mutate(
     SiteName = case_when(
       grepl("^1$", plot_id) ~ "Leadmine Mountain",
-      grepl("^2$", plot_id) ~ "Braod Meadow Brook", 
-      grepl("^3$", plot_id) ~ "Burncoat Pond", 
+      grepl("^2$", plot_id) ~ "Braod Meadow Brook",
+      grepl("^3$", plot_id) ~ "Burncoat Pond",
       grepl("^4$", plot_id) ~ "Pierpoint Meadow",
-      grepl("^5$", plot_id) ~ "Rutland Brook", 
-      grepl("^6$", plot_id) ~ "Cooks Canyon", 
+      grepl("^5$", plot_id) ~ "Rutland Brook",
+      grepl("^6$", plot_id) ~ "Cooks Canyon",
       grepl("^7$", plot_id) ~ "Eagle Lake",
-      grepl("^8$", plot_id) ~ "Wachusett Meadow", 
-      grepl("^9$", plot_id) ~ "Lake Wampanoag", 
+      grepl("^8$", plot_id) ~ "Wachusett Meadow",
+      grepl("^9$", plot_id) ~ "Lake Wampanoag",
       grepl("^10$", plot_id) ~ "Flat Rocks",
-      grepl("^11$", plot_id) ~ "Lincoln Woods", 
+      grepl("^11$", plot_id) ~ "Lincoln Woods",
     )
   ) %>% dplyr::select(layer, level, ClassName, class, metric, value, SiteName, size, plot_id, percentage_inside)
 
@@ -300,7 +300,7 @@ metric3
 
 metric3 %>% drop_na(value)
 
-# The output data frame has two rows for each grid cell; therefore, 
+# The output data frame has two rows for each grid cell; therefore,
 # if we want to connect the result with a spatial object, we need to reformat it.
 # It can be done with the pivot_wider() function from the tidyr package.
 
@@ -339,10 +339,10 @@ sample_lsm(my_aoi_raster, y = sample_points_f, size = 500, level = "landscape", 
 
 
 # farmers <- st_read(dir(tempdir(), pattern = "farmers.shp", full.names = TRUE))
-# 
+#
 # sample_sites <- st_read(dir(CENSUS2010TIGERROADS_SHP/, pattern = "sample_sites_projected.shp", full.names = TRUE))
-# 
-# 
+#
+#
 # sample_sites <-  system.file("CENSUS2010TIGERROADS_SHP/sample_sites_projected.shp", package = "geospaar")
 # sample_sites
 # site_vector_data <- st_read(dsn = sample_sites)
@@ -357,7 +357,7 @@ sample_lsm(my_aoi_raster, y = sample_points_f, size = 500, level = "landscape", 
 
 #------------------------------------------------------------------------------------------
 
-#Plotting the raster 
+#Plotting the raster
 
 #A raster that contains categorical data can be defined with the ratify function.
 
@@ -374,10 +374,10 @@ rat <- levels(my_aoi_raster_ratted)[[1]]
 rat$landcover <- unlist(ClassNames)
 levels(my_aoi_raster_ratted) <- rat
 
-levelplot(my_aoi_raster_ratted, 
-          border = "transparent",  
-          scales=list(draw=FALSE), 
-          col.regions = terrain.colors(18), 
+levelplot(my_aoi_raster_ratted,
+          border = "transparent",
+          scales=list(draw=FALSE),
+          col.regions = terrain.colors(18),
           margin=  FALSE,
           main=list('Massachussets Classification Map- Classes Sorted 22- 2', col='Black'))
           # xlab= list('This is the X-Axis', fontface = 'bold'),
@@ -401,8 +401,8 @@ tmap_mode("view") + legend_title = expression("Area (km"^2*")")
 map_mass_cover = tm_shape(my_aoi_raster_ratted) + tm_raster(alpha = 1) + #tmap_mode("view") + tmap_options(legend.text.size  = .2, max.raster = c(plot = 11826375, view = 11826375)) +
 tm_layout(title = "Massachussets Classification Map", legend.title.size = 4, legend.text.size = 0.2)  + tm_legend(outside=TRUE)
 map_mass_cover + tm_view(alpha = 1, view.legend.position = c("right","bottom"))
-#There are 5 R base functions that can be used to generate a vector of n 
-#contiguous colors: rainbow(n), heat.colors(n), 
+#There are 5 R base functions that can be used to generate a vector of n
+#contiguous colors: rainbow(n), heat.colors(n),
 #terrain.colors(n), topo.colors(n), and cm.colors(n).
 
 
