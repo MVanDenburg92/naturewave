@@ -82,7 +82,7 @@ The following variables will be analyzed against the obtained NDSI vs NDVI & NDB
 Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
 
 * 4/13 -- Both--Draft of Vignette submitted to Github, send screenshots of code to Estes
-* 4/15 -- Gabo-- Downloads Repo and is able to make commits remotely, 
+* 4/15 -- Gabo-- Downloads Repo and is able to make commits remotely 
 * 4/17 -- Miles-- Complete linear correlation between variables and Acoustic indices at multiple buffers -- to identify the scale of influence
   - More specifically: 
     - Complete Obtaining values for variables of interest at buffer sizes 500-3000
