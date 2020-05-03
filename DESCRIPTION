@@ -19,6 +19,8 @@ Imports:
     raster,
     tidyverse,
     dplyr,
+    caTools, 
+    randomForest,
     nlme
 Suggests: 
     kableExtra,

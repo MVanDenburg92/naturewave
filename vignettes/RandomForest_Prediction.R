@@ -1,0 +1,99 @@
+## ----setup, include=FALSE-----------------------------------------------------
+# knitr::opts_knit$set(root.dir = "~/external/data/")
+knitr::opts_chunk$set(echo = TRUE)
+
+
+## ---- eval= FALSE-------------------------------------------------------------
+#  ############################################################################
+#  
+#  #Install libraries
+#  library(sf)
+#  # install.packages("randomForest")
+#  require(randomForest)
+#  library(dplyr)
+#  # install.packages("caTools")
+#  library(caTools)
+#  library(raster)
+#  library(rgdal)
+#  library(geospaar)
+
+## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+##############################   Random Forest Regression at 2500###############################
+
+# Data reading
+
+path_out <- '../inst/extdata'
+
+
+DS <- read.csv('Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
+
+
+# Filter values using 2500 as the scale of best influence
+DS_2500 <- DS %>% filter(Buffer == "Buffer 2500 (m)") %>% dplyr::select(-c(X,Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
+
+# Scale variable values except NDSI values 
+DS_2500_scaled <- DS_2500[,1:4]/255
+
+# Use mutate to add NDSI values back to the table. 
+DS_2500_scaled <- DS_2500_scaled %>% mutate("NDSI" = DS_2500$NDSI)
+
+# Create training and testing samples
+sample = caTools::sample.split(DS_2500$NDSI, SplitRatio = .75)
+train = subset(DS_2500, sample == TRUE)
+test  = subset(DS_2500, sample == FALSE)
+
+# Check out the dimensions of each sample set
+dim(train)
+dim(test)
+
+# Create RandomForest Model
+set.seed(100)
+rf_2500 <- randomForest::randomForest(NDSI ~., data=DS_2500_scaled, mtry= 2, importance = TRUE, na.action=na.omit)
+
+print(rf_2500)
+
+# Show "importance" of variables: higher value means more important:
+round(importance(rf_2500), 2)
+
+# Visualize Variable Importance Plot
+randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer level")
+
+## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+# Read raster images for imperviousness, connectedness, structure, and traffic
+          
+# fslc <- dir("../inst/extdata", pattern = "lc2500*.tif", full.names = TRUE)
+
+          
+Imperv <- raster("lc2500_imperv.tif")
+Connectedness <- raster("lc2500_connect.tif")
+Structure <- raster("lc2500_structure.tif")
+Traffic <- raster("lc2500_traffic.tif")
+
+# Create a raster stack
+landcover_ls <- list(Imperv, Connectdness, Structure, Traffic)
+names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
+
+my_stack <- stack(landcover_ls)
+# Use raster::predict to predict NDSI values across the landscape
+ndsi_pred <- raster::predict(object = my_stack, model=rf_2500, type = 'response', index = 5)
+ndsi_pred
+
+# Plot NDSI prediction layer 
+plot(ndsi_pred)
+
+# Display NDSI prediction layer with sample locations. First, set the CRS for the sampling locations to match the one from the raster image
+
+sites <- st_read(dsn = "../inst/extdata/sample_sites_projected.shp")
+sites <- st_transform(x = sites, crs = st_crs(ndsi_pred))
+
+geospaar::plot_noaxes(ndsi_pred, main = "NDSI Prediction")
+plot(st_geometry(sites), add = TRUE)
+
+# Plot variables and predicted NDSI raster image
+
+# Rename ndsi_pred
+names(ndsi_pred) <- c("NDSI_Prediction")
+
+stack_final <- stack(my_stack,ndsi_pred)
+geospaar::plot_noaxes(stack_final)
+
