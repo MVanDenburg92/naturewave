@@ -407,18 +407,18 @@ plot(lc_stack)
 #...................................................................
 
 #Now let's apply the focalweight function to get a focal matrix for each .tif file in the landcover_list 
+# at the scale of best influence 
 
-
-#1500 Buffers
-fw_sum_1500 <- lapply(landcover_list,function(x){
-  fw <- focalWeight(x, 1500, type='circle')
-  })
-
-
-#2000 Buffers
-fw_sum_2000 <- lapply(landcover_list,function(x){
-  fw <- focalWeight(x, 2000, type='circle')
-  })
+# #1500 Buffers
+# fw_sum_1500 <- lapply(landcover_list,function(x){
+#   fw <- focalWeight(x, 1500, type='circle')
+#   })
+# 
+# 
+# #2000 Buffers
+# fw_sum_2000 <- lapply(landcover_list,function(x){
+#   fw <- focalWeight(x, 2000, type='circle')
+#   })
 
 #2500 Buffers
 
@@ -429,42 +429,42 @@ fw_sum_2500 <- lapply(landcover_list,function(x){
 
 
 #Runs focal at a buffer weight of 1500 m radius
-radius1 <- 1500
-lc1500 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius1, ".tif")
-  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_1500[[x]]), filename = f, overwrite = TRUE)
-  return(r)
-})
-lc1500_stacked <- stack(lc1500)  # stack
+# radius1 <- 1500
+# lc1500 <- lapply(1:4, function(x) {  # x <- 1
+#   f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius1, ".tif")
+#   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_1500[[x]]), filename = f, overwrite = TRUE)
+#   return(r)
+# })
+# lc1500_stacked <- stack(lc1500)  # stack
 
 # Plotting out the results
-tit1 <- "1500 (m) Buffer "
-par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
-lapply(1:4, function(x){
-  plot(lc1500_stacked[[x]], axes = FALSE, box = FALSE, main =  toupper(c(tit1,gsub(".tif", "", basename(f[x])))))
-  plot(st_geometry(sample_points_f), add = TRUE)
-})
+# tit1 <- "1500 (m) Buffer "
+# par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
+# lapply(1:4, function(x){
+#   plot(lc1500_stacked[[x]], axes = FALSE, box = FALSE, main =  toupper(c(tit1,gsub(".tif", "", basename(f[x])))))
+#   plot(st_geometry(sample_points_f), add = TRUE)
+# })
 
 
 
 #Runs focal at a buffer weight of 2000 m radius
 
-radius2 <- 2000
-lc2000 <- lapply(1:4, function(x) {  # x <- 1
-  f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius2, ".tif")
-  r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f, overwrite = TRUE)
-  return(r)
-})
-lc2000_stacked <- stack(lc2000)  # stack
+# radius2 <- 2000
+# lc2000 <- lapply(1:4, function(x) {  # x <- 1
+#   f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius2, ".tif")
+#   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2000[[x]]), filename = f, overwrite = TRUE)
+#   return(r)
+# })
+# lc2000_stacked <- stack(lc2000)  # stack
 
 
 # Plotting out the results
-tit2 <- "2000 (m) Buffer "
-par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
-lapply(1:4, function(x){
-  plot(lc2000_stacked[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit2,gsub(".tif", "", basename(f[x])))))
-  plot(st_geometry(sample_points_f), add = TRUE)
-})
+# tit2 <- "2000 (m) Buffer "
+# par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
+# lapply(1:4, function(x){
+#   plot(lc2000_stacked[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit2,gsub(".tif", "", basename(f[x])))))
+#   plot(st_geometry(sample_points_f), add = TRUE)
+# })
 
 
 
@@ -583,11 +583,11 @@ plot(imperv_cropped, main ="Input Raster") #plot original
 pts1 <- cbind(sample_points_f, raster::extract(lc_stack, sample_points_f))  # original lc
 
 
-pts_1500 <- cbind(pts1, raster::extract(lc1500_stacked, pts1))# buffer points 1500
-write.csv(pts_1500, file.path(path_out,"fv_pts_1500.csv"), row.names = FALSE)
-
-pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points 2000
-write.csv(pts_2000, file.path(path_out,"fv_pts_2000.csv"), row.names = FALSE)
+# pts_1500 <- cbind(pts1, raster::extract(lc1500_stacked, pts1))# buffer points 1500
+# write.csv(pts_1500, file.path(path_out,"fv_pts_1500.csv"), row.names = FALSE)
+# 
+# pts_2000 <- cbind(pts1, raster::extract(lc2000_stacked, pts1))  # buffer points 2000
+# write.csv(pts_2000, file.path(path_out,"fv_pts_2000.csv"), row.names = FALSE)
 
 pts_2500 <- cbind(pts1, raster::extract(lc2500_stacked, pts1)) # buffer points 2500
 write.csv(pts_2500, file.path(path_out,"fv_pts_2500.csv"), row.names = FALSE)
