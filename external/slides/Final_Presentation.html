@@ -512,12 +512,31 @@ Miles Van Denburg &amp; Gabriel Yarleque
 </div>
 <div id="graph-results" class="slide section level1">
 <h1>Graph results</h1>
-<pre><code>## Error in file(file, &quot;rt&quot;): cannot open the connection</code></pre>
-<pre><code>## Error in ggplot(data = linear_rsquared_new): object &#39;linear_rsquared_new&#39; not found</code></pre>
+<pre><code>## [1] &quot;D:/GeoSpaaR/naturewave/external/slides&quot;</code></pre>
+<pre><code>## Error in read.table(file = file, header = header, sep = sep, quote = quote, : no lines available in input</code></pre>
+<pre><code>## Error: `data` must be a data frame, or other object coercible by `fortify()`, not a character vector</code></pre>
 <pre><code>## Error in plotly::ggplotly(RSquaredPlot_NDSI): object &#39;RSquaredPlot_NDSI&#39; not found</code></pre>
 </div>
 <div id="surfaces" class="slide section level1">
 <h1>Surfaces</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="co"># insert 4 raster surfaces here</span></a>
+<a class="sourceLine" id="cb8-2" title="2"></a>
+<a class="sourceLine" id="cb8-3" title="3">          </a>
+<a class="sourceLine" id="cb8-4" title="4">Imperv &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="st">&quot;../inst/extdata/lc2500_imperv.tif&quot;</span>)</a>
+<a class="sourceLine" id="cb8-5" title="5">Connectedness &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="st">&quot;../inst/extdata/lc2500_connect.tif&quot;</span>)</a>
+<a class="sourceLine" id="cb8-6" title="6">Structure &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="st">&quot;../inst/extdata/lc2500_structure.tif&quot;</span>)</a>
+<a class="sourceLine" id="cb8-7" title="7">Traffic &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="st">&quot;../inst/extdata/lc2500_traffic.tif&quot;</span>)</a>
+<a class="sourceLine" id="cb8-8" title="8"></a>
+<a class="sourceLine" id="cb8-9" title="9"></a>
+<a class="sourceLine" id="cb8-10" title="10"></a>
+<a class="sourceLine" id="cb8-11" title="11"></a>
+<a class="sourceLine" id="cb8-12" title="12">r_path &lt;-<span class="st"> </span><span class="kw">dir</span>(<span class="st">&quot;./data/Amherst_CAPS2011&quot;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>, <span class="dt">pattern =</span> <span class="st">&quot;.tif&quot;</span>)</a>
+<a class="sourceLine" id="cb8-13" title="13"><span class="co"># landcover &lt;- lapply(unname(r_path), function(x) {</span></a>
+<a class="sourceLine" id="cb8-14" title="14"><span class="co">#   r &lt;- raster(x)</span></a>
+<a class="sourceLine" id="cb8-15" title="15"><span class="co">#   crs(r) &lt;- crs(pts)</span></a>
+<a class="sourceLine" id="cb8-16" title="16"><span class="co">#   r</span></a>
+<a class="sourceLine" id="cb8-17" title="17"><span class="co"># })</span></a>
+<a class="sourceLine" id="cb8-18" title="18"><span class="co"># names(landcover) &lt;- gsub(&quot;.tif&quot;, &quot;&quot;, basename(f))</span></a></code></pre></div>
 </div>
 <div id="results-from-random-forest" class="slide section level1">
 <h1>Results from Random Forest</h1>
@@ -529,22 +548,26 @@ Miles Van Denburg &amp; Gabriel Yarleque
 <h1>Results from ¨Predictive Modeling</h1>
 <h2 id="ndsi-predidictive-surface"><strong>NDSI Predidictive surface</strong></h2>
 <pre><code>## Error in raster::predict(object = my_brick, model = rf_2500, type = &quot;response&quot;, : object &#39;my_brick&#39; not found</code></pre>
-<pre><code>## Error in st_read(dsn = &quot;../inst/extdata/sample_sites_projected.shp&quot;): could not find function &quot;st_read&quot;</code></pre>
+<pre><code>## Error in st_read(dsn = sites): could not find function &quot;st_read&quot;</code></pre>
 <pre><code>## Error in st_transform(x = sites, crs = st_crs(ndsi_pred)): could not find function &quot;st_transform&quot;</code></pre>
 <pre><code>## Error in names(ndsi_pred) &lt;- c(&quot;NDSI_Prediction&quot;): object &#39;ndsi_pred&#39; not found</code></pre>
 <pre><code>## Error in values(ndsi_pred): could not find function &quot;values&quot;</code></pre>
 <pre><code>## Error in values(ndsi_pred): could not find function &quot;values&quot;</code></pre>
-<pre><code>## Error in resolveFormula(lng, data): object &#39;sites&#39; not found</code></pre>
+<pre><code>## Error in sites$Long: $ operator is invalid for atomic vectors</code></pre>
 </div>
 <div id="conclusion-and-discussion" class="slide section level1">
 <h1>Conclusion and Discussion</h1>
 <ul>
-<li><p>The scale of best influence for NDSI values is at 2500 m buffer from the sampling location</p></li>
-<li><p>Imperviousness and Traffic are the most important variables at predicting NDSI values</p></li>
+<li><p>We assessed the relationships between habitat quality and biodiversity in a highly fragmented and human-dominated forested landscape in Massachusetts.</p></li>
+<li><p>We examined four ecological variables: imperviousness, connectedness, vegetation structure and traffic to understand their relationship to sound indices.</p></li>
+<li><p>We used mutiple buffers to examine this relationship. The scale of best influence for NDSI values is at 2500 meters buffer from the sampling location.</p></li>
+<li><p>Imperviousness and Traffic are the most important ecological variables at predicting NDSI values across the study area.</p></li>
 </ul>
 <h2 id="future-work"><strong>Future work:</strong></h2>
 <ul>
-<li>Test further variables such as ecological integrity and micro climate alterations</li>
+<li><p>Test further variables such as ecological integrity and micro climate alterations.</p></li>
+<li><p>Validate the predictive model based on an independent acoustic sample collected during May to July in the near future, following the same coection stantards as before.</p></li>
+<li><p>Assess the capacity of models to extrapolate relationships between habitat structure and acoustic diversity.</p></li>
 </ul>
 </div>
 

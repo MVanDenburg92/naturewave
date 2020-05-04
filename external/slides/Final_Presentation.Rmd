@@ -3,13 +3,15 @@ title: "NatureWave"
 author: "Miles Van Denburg & Gabriel Yarleque"
 date: "5/4/2020"
 output: slidy_presentation
-
+Note: "Please view the presentation in full screen mode"
 
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
+
+
 
 # Introduction
 
@@ -85,7 +87,6 @@ plot(my_brick, axes = FALSE, box = FALSE)
 ```
 
 
-
 ## __Random Forest__
 
 ```{r, eval = FALSE, echo = TRUE}
@@ -155,7 +156,7 @@ plotly::ggplotly(RSquaredPlot_NDSI)
 
 # Surfaces
 
-```{r}
+```{r, eval = FALSE, echo=TRUE}
 # insert 4 raster surfaces here
 
           
@@ -249,10 +250,18 @@ leaflet() %>% addTiles() %>% addCircleMarkers(lng = sites$Long, lat = sites$Lat,
 
 # Conclusion and Discussion
 
-- The scale of best influence for NDSI values is at 2500 m buffer from the sampling location
+- We assessed the relationships between habitat quality and biodiversity in a highly fragmented and human-dominated forested landscape in Massachusetts.
 
-- Imperviousness and Traffic are the most important variables at predicting NDSI values
+- We examined four ecological variables: imperviousness, connectedness, vegetation structure and traffic to understand their relationship to sound indices. 
+
+- We used mutiple buffers to examine this relationship. The scale of best influence for NDSI values is at 2500 meters buffer from the sampling location. 
+
+- Imperviousness and Traffic are the most important ecological variables at predicting NDSI values across the study area.
 
 ## __Future work:__
 
-- Test further variables such as ecological integrity and micro climate alterations
+- Test further variables such as ecological integrity and micro climate alterations. 
+
+- Validate the predictive model based on an independent acoustic sample collected during May to July in the near future, following the same coection stantards as before. 
+
+- Assess the capacity of models to extrapolate relationships between habitat structure and acoustic diversity. 
