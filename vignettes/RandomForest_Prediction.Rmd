@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, eval= FALSE}
+```{r, eval= TRUE, include=FALSE}
 ############################################################################
 
 #Install libraries
@@ -40,8 +40,7 @@ library(leaflet)
 
 # Random Forest Regression
 
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
-##############################   Random Forest Regression at 2500###############################
+```{r, eval = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 
 # Data reading
 
@@ -52,7 +51,8 @@ DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header 
 
 
 # Filter values using 2500 as the scale of best influence
-DS_2500 <- DS %>% filter(Buffer == "Buffer 2500 (m)") %>% dplyr::select(-c(Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
+DS_2500 <- DS %>% dplyr::filter(Buffer == "Buffer 2500 (m)") %>%
+  dplyr::select(-c(Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
 
 # Scale variable values except NDSI values 
 DS_2500_scaled <- DS_2500[,1:4]/255
@@ -130,7 +130,7 @@ pal3 <- colorNumeric(c("#00A600FF","#E6E600FF","#EAB64EFF","#EEB99FFF","#F2F2F2F
 
 leaflet() %>% addTiles() %>% addCircleMarkers(lng = sites$Long, lat = sites$Lat, weight = 1, popup = sites$Site) %>% 
   addRasterImage(ndsi_pred, colors = pal2, opacity = 0.8) %>%
-  addLegend(pal = pal3, values = values(ndsi_pred), labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),title = "Surface temp")
+  addLegend(pal = pal3, values = values(ndsi_pred), labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),title = "Predicted NDSI Values")
 
 
 

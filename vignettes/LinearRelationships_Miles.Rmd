@@ -16,10 +16,6 @@ vignette: >
 
 References: 
 
-#Calculating metrics 
-
-
-#Sources: 
 #https://www.r-bloggers.com/how-to-calculate-landscape-metrics-for-local-landscapes/
 #https://r-spatialecology.github.io/landscapemetrics/reference/list_lsm.html
 #https://r-spatialecology.github.io/landscapemetrics/
@@ -33,7 +29,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-Setting up the package with the packages we plan to use
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 #Libraries
 library(tidyverse)
@@ -68,8 +63,7 @@ Brings in the CSVS with the buffer as a dataframe  and runs a quick test to sele
 # read_csv(system.file("naturewave/external/DF_Fulltable_CBIND.csv", 
 #                                 package = "naturewave"))
 
-setwd(dir = "../external/data/")
-DF <- read.csv("DF_Fulltable_CBIND.csv")
+DF <- read.csv("../inst/extdata/DF_Fulltable_CBIND.csv")
 
 
 DF_NDSI <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
@@ -82,7 +76,6 @@ DF_Transposed_NDSI <- pivot_wider(DF_NDSI, names_from = Buffer, values_from = ND
 
 ## Bring in the shapefile for the points of interest and examine the areas
 
-Think about RGEE and how it could be used  
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 ##import Shapefile for the sites of interest
@@ -91,8 +84,7 @@ Think about RGEE and how it could be used
 # sample_points_f <- st_read("sample_sites_projected.shp")
 
 
-setwd("../external/data/sample_sites/")
-sample_points_f <- st_read("sample_sites_projected.shp")
+sample_points_f <- st_read("../inst/extdata/sample_sites_projected.shp")
 
 sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
 
@@ -139,8 +131,8 @@ st_crs(sample_points_f)
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
 # Import AOI shapefile containing site
-setwd("../external/data/sample_sites/")
-AOI <- st_read("AOI.shp")
+
+AOI <- st_read("../inst/extdata/AOI.shp")
 AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 
 #import counties for US
@@ -178,91 +170,45 @@ plot(ma_crop)
 
 
 
-The parameterized model is run on the input layers using the CAPS software, written at UMass
-by Brad Compton and Eduard Ene. This software produces an output grid for each metric.
-Metrics fall into two groups: stressor metrics (such as road traffic, invasive plants, or nutrient
-enrichment), and resiliency metrics (similarity, connectedness, and aquatic connectedness).
 
-Stressor metrics measure anthropogenic stressors that reduce the integrity of a site, while
-resiliency metrics measure the intrinsic ability of a site to maintain its ecological integrity,
-despite the impact of anthropogenic stressors. 
-
-Resiliency metrics, in reflecting the currentlandscape, do take into account anthropogenic stressors such as road traffic and impervious surfaces. The three resiliency metrics are based on the ecological distance among cells
-computed using the ecological settings variables described in Appendix D.
-
-Scaling.  Scaled metrics and IEI are scaled from 0-1; in geoTIFFs, these grids are expressed in terms of percent (scaled 0-100).  Raw metrics and settings grids are scaled in original units, unique to each grid; in geoTIFFs, these grids are scaled from 0-255.  The CAPS final landcover, capsland, represents landcover classes using integer classes (see Appendix H).  GeoTIFF versions are already colored appropriately; legends files for QGIS, ArcView 3.3, and ArcMap are supplied for the Arc grid.
-
- 
-
-The coordinate reference system for all data is Massachusetts mainland State Plane, NAD83.
-
-
-Hydrological alterations
-
-Imperviousness imperv Measures the intensity of impervious surface in the
-watershed above the focal cell, based on imperviousness
-and the modeled “influence value” for each cell, which is
-the aquatic distance from the focal cell based on a timeof-flow model.
-Data source: landcover, streams, flow direction,
-watershed resistance, percent imperviousness
-
-
-Integrity Metrics
-
-Connectedness connect Measures the disruption of habitat connectivity caused by
-all forms of development between each focal cell and
-surrounding cells as well as the “resistance” of the
-surrounding undeveloped landscape, as well as the
-similarity of surroundings. A hypothetical organism in a
-highly connected cell can reach a large area of ecologically
-similar cells with minimal crossing of “hostile” cells. This
-metric uses a least-cost path algorithm to determine the
-area that can reach each focal cell, incorporating each
-cell’s similarity to the focal cell.
-Data source: landcover, ecological settings variables
-
-
-
-
-Hydrological alterations
+Variables of Interest: 
 
 Imperviousness
 
       raw: http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/imperv.zip
 
-Resiliency Metrics
 
 Connectedness
 
       raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/connect.zip
       
-Vegetation
 
 Vegetative structure
 
         http://jamba.provost.ads.umass.edu/web/caps2011/tiffzips/settings/structure.zip
       
-Development & roads
 
-Road traffic
+ Road traffic
 
       raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/traffic.zip
 
 
 
 
+## Bringing in the tif files
 
-##Two ways of bringing in the Tif Files
+```{r, warning = FALSE, message = FALSE}
+
+
+## Two ways of bringing in the Tif Files
 
 ### [1] One by One
 ### [2] All at once
 
-```{r, warning = FALSE, message = FALSE}
-
 ###[1]
 
 #import immperviousness raster file
-imperv <- raster("../external/data/Amherst_CAPS2011/imperv.tif", crs = crs(sample_points_f))
+imperv <- raster("../inst/extdata/imperv.tif", crs = crs(sample_points_f))
 
 ##Plot code to test tif
 # plot(imperv)
@@ -279,7 +225,7 @@ imperv_cropped <- crop(imperv, y = ma_crop)
 
 #import connectedness raster file
 
-connect <- raster("../external/data/Amherst_CAPS2011/connect.tif", crs = crs(sample_points_f))
+connect <- raster("../inst/extdata/connect.tif", crs = crs(sample_points_f))
 
 ##Plot code to test tif
 # plot(connect)
@@ -295,7 +241,7 @@ connect_cropped <- crop(connect, y = ma_crop)
 
 
 #import structure raster file
-structure <- raster("../external/data/Amherst_CAPS2011/structure.tif", crs = crs(sample_points_f))
+structure <- raster("../inst/extdata/structure.tif", crs = crs(sample_points_f))
 
 ##Plot code to test tif
 # plot(structure)
@@ -313,7 +259,7 @@ structure_cropped <- crop(structure, y = ma_crop)
 # Data source: landcover, traffic rates
 
 #import connectedness raster file
-traffic <- raster("../external/data/Amherst_CAPS2011/traffic.tif", crs = crs(sample_points_f))
+traffic <- raster("../inst/extdata/traffic.tif", crs = crs(sample_points_f))
 ##Plot code to test tif
 # plot(traffic)
 # plot(sample_points_f, col = "green", add = TRUE)
@@ -346,7 +292,7 @@ f <- dir("../external/data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif
 landcover_list <- list(connect_cropped, imperv_cropped, structure_cropped, traffic_cropped)
 names(landcover_list) <- gsub("tif", "", basename(f))
 
-#[2]  all together
+###[2]  all together
 
 # f <- dir("./data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif")
 # landcover <- lapply(unname(f), function(x) {
@@ -374,7 +320,7 @@ plot(lc_stack)
 
 ```
 
-## Calculate focal mean stat at a weight of 3000 for each variable of interest--imperviousness, traffic, and connectedness. 
+## Calculate focal mean stat at a weight of 3000 for each variable of interest
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -396,7 +342,7 @@ plot(lc_stack)
 # The focal function operates on the matrix, regardless of it being circular or rectangular and assigns the resulting value to the center cell. In a binary matrix values with 1 would be operated on and those with 0, ignored. A circular window is a rectangular matrix where, values occuring outside the defined radius are 0. 
 
 
-# Since we are interested in the range of the recording device and because we have assigned a consistent value across the buffers for NDSI, ANT, and BIO varying per site per metric, we are going to use a focalWeight circle to replicate the 3000m buffer and pass it over the entirety of the images for imperv, connect, and structure. This will give us a raster for each and 
+# Since we are interested in the range of the recording device and because we have assigned a consistent value across the buffers for NDSI, ANT, and BIO varying per site per metric, we are going to use a focalWeight circle to replicate the 3000m buffer and pass it over the entirety of the images for imperv, connect, and structure. This will give us a raster for each 
 
 
 #2 apply circular moving window to continuous data
@@ -598,19 +544,10 @@ write.csv(pts_2500, file.path(path_out,"fv_pts_2500.csv"), row.names = FALSE)
 
 
 
-Extract values from a Raster* object at the locations of other spatial data. You can use coordinates
-(points), lines, polygons or an Extent (rectangle) object. You can also use cell numbers to extract
-values.
-If y represents points, extract returns the values of a Raster* object for the cells in which a set of
-points fall. If y represents lines, the extract method returns the values of the cells of a Raster*
-object that are touched by a line. If y represents polygons, the extract method returns the values
-of the cells of a Raster* object that are covered by a polygon. A cell is covered if its center is inside
-the polygon (but see the weights option for considering partly covered cells; and argument small
-for getting values for small polygons).
-It is also possible to extract values for point locations from SpatialPolygons.
+Code to extract values from a Raster* object at the locations of other spatial data. You can use coordinates
+(points), lines, polygons or an Extent (rectangle) object.
 
-
-```{r,include=FALSE, warning = FALSE, message = FALSE}
+```{r,include=TRUE, warning = FALSE, message = FALSE}
 set.seed(1)
 buffs_extract <- lapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
   #2a
@@ -927,10 +864,9 @@ write.csv(Imperv_connect_Struct_Traffic_NDSI,
 
 
 
-## Code to create linear correlations between NDSI and
-## Imperviousness, connectedness, and structure
+## Code to create linear correlations between NDSI and  Imperviousness, Connectedness, and structure
 
-```{r,include=FALSE, warning = FALSE, message = FALSE}
+```{r,include=TRUE, warning = FALSE, message = FALSE}
 #NDSI vs Impervious
 lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, 
                          data = Imperv_connect_Struct_Traffic_NDSI, 
@@ -984,11 +920,10 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI,
 
 
 
-## Code to create linear correlations between ANT and 
-## Imperviousness, connectedness, Structure, Traffic
 
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
+### Code to create linear correlations between ANT and  Imperviousness, connectedness, Structure, Traffic
 #Anthrophony vs Impervious
 lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, 
                         data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
@@ -1037,10 +972,10 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony,
 ```
 
 
-## Code to create linear correlations between BIO and
-## Imperviousness, connectedness, structure, Traffic
 
 ```{r,include=FALSE, warning = FALSE, message = FALSE}
+
+# Code to create linear correlations between BIO and Imperviousness, connectedness, structure, Traffic
 #Biophony vs Impervious
 
 lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, 
@@ -1087,9 +1022,7 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Biophony,
 
 
 
-
-
-Code to create linear r squared dataframe from the rsquared summaries above
+### Code to create linear r squared dataframe from the rsquared summaries above
 
 ```{r, warning = FALSE, message = FALSE}
 # as. Buffer <- Imperv_connect_Struct_Traffic_NDSI$Buffer

@@ -24,18 +24,31 @@ knitr::opts_chunk$set(echo = TRUE)
   
 A brief (up to 250 words) description of the project, and a bullet point or enumerated list of its primary objectives.
 
-1. We plan to Assess the correlation between acoustic indices at multiple buffers and the variables in order to identify the scale of influence (buffer size where they peak). 
-Imperviousness, connectedness, a vegetative structure using r^2 and their correlations against the sound indices (NDSI, Biophony, Anthrophony)
+The objective of this package and research is to assess the relationships
+between habitat quality and biodiversity in a highly fragmented and human-dominated
+forested landscape in Massachusetts, through a geospatial analysis lens, integrating spatial
+analysis, remote sensing, and soundscape ecology
 
-2. The next stage in our  the BIOMOD package to run a random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
-Variables to include in the random forest model: 
-IUCN richness
-NDSI -- Biophony, Anthrophony (Already Calculated)
-NDVI (Already calculated)
-NDBI (Already calculated)
+Our study is part of a larger project conducted by Florencia Sangermano to advance the conceptual understanding of how landscape pattern and landscape pattern changes relate to biodiversity within a highly anthropogenically modified ecosystem, informing on the relationships and spatial metrics more useful to monitor biodiversity changes.
+By integrating landscape ecology with soundscape ecology, the project will contribute to the applications of remote sensing technologies in conservation planning and monitoring of habitat quality.
 
-3. Examine the importance of the variables of interest: imperviousness, connectedness, a vegetative structure using r^2 and their correlations against the sound indices (NDSI, Biophony, Anthrophony)
-Pull plots and tables that show the insignificance of the other 4 indices (AEI, ACI, BI, ADI) 
+In order to do this, we created Naturewave. Naturewave is a package created to assess the correlation between anthropogenic variables and acoustic indices at multiple buffers sizes (500, 1000, 1500, 200, 2500, and 3000) for 11 sampling locations across Massachusetts.
+
+Within the package we identify the scale of best influence (the buffer size where acoustic indices are peak) across each sampling location by examining the R2 values of each of the variables at different buffer sizes.
+
+Anthropogenic Variables 
+-- Imperviousness
+-- Connectedness
+-- Vegetative structure
+-- Traffic
+
+Acoustic Indices:
+-- NDSI
+-- Biophony
+-- Anthrophony
+
+Once the correlation is established, we use random forest regression to examine the importance of the variables of interest and predict NDSI values across the study area. 
+
   
   
 # Approach and Method 
@@ -52,11 +65,59 @@ Approach used to formulate sound indices and habitat quality measures:
 - Habitat quality components were identified as the vegetation productivity, measured as the normalized difference vegetation index (NDVI), built-up magnitude, measured as the normalized difference-built index NDBI, and traffic influence, measured as distance from primary, secondary, and tertiary roads. 
 - NDVI and NDBI were calculated using Sentinel-2 imagery from Google Earth Engine. Relationships of NDBI and NDBI were extracted at multiple distance buffers from recoding sites to evaluate the scale at which these habitat quality measures had the highest influence on biodiversity. 
 
+  
+```{r}
+
+```
+
+
+
+- Based on the results of the above examination, it was determined that NDSI had the strongest relationship with NDVI and NDBI. Given the result we relied on NDSI as our proxy to use in examining the relationship between landscape/ecological variables of interest and acoustic indices. 
+- We used a combination of linear regression methods to assess the correlation of variables and sound indices, and identified the buffer size or scale of best influence for NDSI values across the study area using the Pearson’s Correlation Coefficient for each measured variable at multiple scales/buffers. 
+Once we identified the buffer size representing the highest scale of influence we used a focalWeight circle to replicate the 2500m buffer and passed it over the entirety of the images for imperv, connect, and structure to obtain a  weighted matrix for each. We then used the focal function to pass over each image pixel, and multiplied those weights by each pixel value in the neighborhood, and then summed those to get the mean value raster image for each variable across the entire study area.
+Random forest regression was used to evaluate the variables and find out their order of importance at predicting NDSI values. Finally, we created a model that takes NDSI values at 2500 meters buffer from the sampling location in combination with the mean value raster images in order to estimate NDSI values for the entire study area. 
+
+## Results
+
+### Results from linear correlation and R squares. 
+By examining the R square values from the linear correlation using Pearson’s Correlation Coefficient  between the variables of interest and NDSI, we were able to identify the scale at which NDSI values were most significant. At 2500 meters from the sampling location, NDSI values can be considered as representative for the landscape across the study area. 
+
+### Random Forest Regression Results
+We selected four independent variables (Imperviousness, Connectedness, Vegetative Structure, and Traffic) to test their level of importance in predicting NDSI values. The results of the random forest regression at different buffer sizes or scale of best influence revealed that Traffic and Imperviousness are the variables with a higher explanatory power at predicting NDSI values across the study area. We determined this by looking at the Variable Importance Plot which list Traffic and Imperviousness at the top of the variables list. By looking at the %IncMSE at the 2500 scale of best influence, 
+Mean square-error (%IncMSE) and node purity (incNodePurity) are the measurements returned after running the RandomForest algorithm. %IncMSE provides the prediction ability of mean square error with randomly permuted variables; whereas, IncNodePurity calculates the loss when best splits are determined by a given variable. 
+Traffic has a %IncMSE of 9.61 and Imperviousness has a %IncMSE value of 6.69. These two variables are the most important in the regression. They are the ones used to better split the nodes of the regression and achieve higher increases in node purities.    
+### Predictive Modeling Results:
+The result from modeling is a continuous surface predicting NDSI values across the landscape based on the values observed at the 2500 meters buffer, which was identified as the scale of best influence. The predictive NDSI surface is biophyscally reasonable because it indicates high concentrations of NDSI values away from areas that are highly developed and have high levels of traffic. Vegetation structure and connectedness are also contributors to NDSI values but to a less extent compared to the imperviousness and traffic. Vegetation structure and connectedness provide good indicators for habitat assessment and connectivity. 
+
+
+## Conclusion
+
+
+
+## Discussion
+
+As mentioned in the objectives, this study is part of a larger project with the larger goal of creating a characterization of the type of landscape structural changes happening in the Worcester plateau and the rate of changes. The next stage of the process is to test out further variables of interest within our model and refine it to create a better predictive model. The predictive model will be validated based on an independent acoustic sample collected during May 11 through July this summer (or next given the closure of parks and forests) following the same collection standards specified for the data collected for this study. 
+
+Identifying how habitat structure relates to acoustic diversity, as well as assessing the capacity of models to extrapolate these relationships, will provide a direct link between spatial changes in landscape structure and biodiversity. This information is essential to evaluate how urbanization is shaping remaining forest habitat in Massachusetts, as well as to identify areas of more rapid development and areas of shifting development trajectories.
+
+
+
+
+
+
+
 ### R Packages Utilized
 
 The `soundecology`, `tuneR`, and `seewave` packages were utilized in order to read in the sound files and analyze the sound frequencies by Biophony and Anthrophony.  Sound indices were calculated from these frequencies using fuctions within the package to formulate the NDSI, BI, ACI, ADI, and AEI indices for the +1200 records for the 11 sites. The `tidyverse` library was loaded in order for us to clean and "tidy" the data into clean csvs. The csvs were then exported and then re-read back in and converted into a singular dataframe organized by site. Linear models were then created to examine each sound index --in addition to anthrophony & biophony-- vs the NDVI and NDBI results by buffer 500-3000 meters. The linear r squared values were extracted from each of the linear models and compiled into a dataframe organized by buffer size. The r^2 values were then plotted out as "Sound Indices r^2 values vs NDVI by Buffer" and "Sound Indices r^2 values vs NDBI by Buffer". 
 
-A list of used packages are listed below: 
+We used a combination of linear regression methods to assess the correlation of variables and sound indices, and identified the buffer size or scale of best influence for NDSI values across the study area using the Pearson’s Correlation Coefficient for each measured variable at multiple scales/buffers. 
+
+Once we identified the buffer size representing the highest scale of influence we used a focalWeight circle to replicate the 2500m buffer and passed it over the entirety of the images for imperv, connect, and structure to obtain a  weighted matrix for each. We then used the focal function to pass over each image pixel, and multiplied those weights by each pixel value in the neighborhood, and then summed those to get the mean value raster image for each variable across the entire study area.
+Random forest regression was used to evaluate the variables and find out their order of importance at predicting NDSI values. Finally, we created a model that takes NDSI values at 2500 meters buffer from the sampling location in combination with the mean value raster images in order to estimate NDSI values for the entire study area. 
+
+
+
+A list of used packages in this stage of the analysis are listed in the description folder.
 
 * library(tidyverse)
 * library(tidyselect)
@@ -65,9 +126,22 @@ A list of used packages are listed below:
 * library(tuneR)
 * library(seewave)
 * library(nlme)
-* library(landscapemetrics)
 * library(landscapetools)
 * library(rasterVis)
+* libary(rgdal)
+* library(rgeos)
+* library(geospaar)
+* library(plotly)
+* library(sf)
+* library(lwgeom)
+* library(ggplot2)
+* library(raster)
+* library(tidyverse)
+* library(dplyr)
+* library(caTools) 
+* library(randomForest)
+* library(leaflet)
+* library(nlme)
 
 
 From the Amhest [CAPS: Conservation Assessment and Prioritization System, Massachusetts Index of Ecological Integrity 2011 data](http://jamba.provost.ads.umass.edu/web/caps2011/CAPS2011data.htm)
@@ -77,6 +151,10 @@ The following variables will be analyzed against the obtained NDSI vs NDVI & NDB
 - Imperviousness
 - connectedness 
 - vegetative structure
+- Traffic
+
+
+
 
 # Timelines 
 Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
@@ -93,14 +171,12 @@ Provide a timeline for when each portion of the analysis will be completed. Thes
     - Identify peaks 
 
 
-
 Refine code and results
 
 * 4/22 -- Gabo-- Prepare to run Random Forest Regression
 * 4/27 -- BOTH-- Interpret results and clean up code 
 
 # Anticipated outcomes 
-Briefly describe, as bullet points, the outcomes you expect for each of your primary project objectives
 
 - Random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
  --- Variables  oncluded in the random forest model: 
