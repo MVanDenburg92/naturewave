@@ -131,7 +131,11 @@ knitr::include_graphics(here::here("external/slides/figures/NDVI_NDSIFinal.png")
 
 library(ggplot2)
 
-linear_rsquared_new <- read.csv("../inst/extdata/linear_rsquared_traffic_included.csv")
+getwd()
+
+linear_rsquared_new <- system.file("extdata/linear_rsquared_traffic_included.csv", package = "naturewave")
+
+linear_rsquared_new <- read.csv(linear_rsquared_new)
 
 RSquaredPlot_NDSI <- ggplot(data = linear_rsquared_new) +
   geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Imperv_lm,
@@ -153,6 +157,26 @@ plotly::ggplotly(RSquaredPlot_NDSI)
 
 ```{r}
 # insert 4 raster surfaces here
+
+          
+Imperv <- raster("../inst/extdata/lc2500_imperv.tif")
+Connectedness <- raster("../inst/extdata/lc2500_connect.tif")
+Structure <- raster("../inst/extdata/lc2500_structure.tif")
+Traffic <- raster("../inst/extdata/lc2500_traffic.tif")
+
+
+
+
+r_path <- dir("./data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif")
+# landcover <- lapply(unname(r_path), function(x) {
+#   r <- raster(x)
+#   crs(r) <- crs(pts)
+#   r
+# })
+# names(landcover) <- gsub(".tif", "", basename(f))
+
+
+
 ```
 
 
@@ -198,7 +222,10 @@ ndsi_pred <- raster::predict(object = my_brick, model=rf_2500, type = 'response'
 
 # Display NDSI prediction layer with sample locations. First, set the CRS for the sampling locations to match the one from the raster image
 
-sites <- st_read(dsn = "../inst/extdata/sample_sites_projected.shp")
+sites <- system.file("extdata/sample_sites_projected.shp", package = "naturewave")
+
+
+sites <- st_read(dsn = sites)
 sites <- st_transform(x = sites, crs = st_crs(ndsi_pred))
 
 # Plot variables and predicted NDSI raster image
