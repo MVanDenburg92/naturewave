@@ -24,21 +24,36 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Objective
+
 The objective of this package and research is to assess the relationships
 between habitat quality and biodiversity in a highly fragmented and human-dominated
 forested landscape in Massachusetts, through a geospatial analysis lens, integrating spatial
-analysis, remote sensing, and soundscape ecology
+analysis, remote sensing, and soundscape ecology. More specifically, the goal is to understand the relationships between community acoustic and habitat configuration.
 
 Our study is part of a larger project conducted by Florencia Sangermano to advance the conceptual understanding of how landscape pattern and landscape pattern changes relate to biodiversity within a highly anthropogenically modified ecosystem, informing on the relationships and spatial metrics more useful to monitor biodiversity changes.
-By integrating landscape ecology with soundscape ecology, the project will contribute to the applications of remote sensing technologies in conservation planning and monitoring of habitat quality.
 
-In order to do this, we created Naturewave. Naturewave is a package created to assess the correlation between anthropogenic variables and acoustic indices at multiple buffers sizes (500, 1000, 1500, 200, 2500, and 3000) for 11 sampling locations across Massachusetts.
+### Measuring Biodiversity
 
-Within the package we identify the scale of best influence (the buffer size where acoustic indices are peak) across each sampling location by examining the R2 values of each of the variables at different buffer sizes.
+Measuring biodiversity is a challenging task as it requires extensive field assessments, which are
+time and monetary costly. Acoustics have been gaining increasing attention in
+wildlife conservation, as a reliable and low cost approach to monitor vocalizing biodiversity over
+extended periods of time. One such Biodiversity measure is Acoustic community diversity-- defined as the
+aggregation of all species that produce sounds at a particular location and time. In turn, Acoustic indices allow an an aggregation of acoustic signals to represent the overall acoustic community diversity of the landscape. One such index is the Normalized Difference Soundscape Index which characterizes soundscape properties as such to allow
+the identification of human influence of the landscape through the partitioning of soundscapes into biophony (sounds from biodiversity) and anthrophony (sounds from humans). This partitioning allows the classification of a particular location based on its ecological and anthropic characteristics. 
+
+By integrating landscape ecology with soundscape ecology, the project provides a less costly-reproducible approach to measurement and analysis and contributes to the applications of remote sensing technologies in conservation planning and monitoring of habitat quality.
 
 
+### Naturewave
 
-### Anthropogenic Variables of Interest
+In order to achieve our objectives, we created Naturewave. Naturewave is a package created to assess the correlation between anthropogenic variables and acoustic indices at multiple buffers sizes (500, 1000, 1500, 200, 2500, and 3000) for 11 sampling locations across Massachusetts.
+
+Within the package we identify the scale of best influence (the buffer size where acoustic indices are peak) across each sampling location by examining the R2 values of each of the following variables (Anthropogenic and Acoustic) at different buffer sizes.
+
+Once the correlation is established, we use random forest regression to examine the importance of the variables of interest and predict NDSI values across the study area. 
+
+
+#### CAPS Variables of Interest
 
 
 * Imperviousness
@@ -61,11 +76,10 @@ Within the package we identify the scale of best influence (the buffer size wher
       raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/traffic.zip
 
 
-### Acoustic Indices:
+#### Acoustic Indices:
 * NDSI (Normalized Difference Soundscape Index (NDSI)
 * (Biophony - Anthrophony)/(Biophony + Anthrophony)
 
-Once the correlation is established, we use random forest regression to examine the importance of the variables of interest and predict NDSI values across the study area. 
 
 
 
@@ -347,9 +361,13 @@ leaflet() %>% addTiles() %>% addCircleMarkers(lng = sites$Long, lat = sites$Lat,
 
 ## Conclusion
 
+This study evaluated the relationship between landscape structure and acoustic community diversity in a highly fragmented and human dominated forested landscape in Massachusetts, in order to inform conservation and planning strategies to facilitate future green development initiatives.
+
+It was expected that ecological variables such as imperviousness and traffic have a much higher degree of influence at predicting NDSI values compared to connectedness and vegetative structure. The NDSI prediction results are highly reasonable and they correlate well with the four ecological variables of interest. In urban landscapes, imperviousness often decreases the habitat for species distribution. It also leads to habitat fragmentation which causes a decrease in habitat connectivity affecting the range of continuous movement of species across the landscape. For birds, imperviousness and traffic limits their habitat and their range of movement. As we have found in this study, NDSI values are higher as we move away from sampling locations and they are best at approximately 2500 meters, which was identified as the scale of best influence. 
 
 
-## Discussion
+
+## Discussion and Next Steps
 
 As mentioned in the objectives, this study is part of a larger project with the larger goal of creating a characterization of the type of landscape structural changes happening in the Worcester plateau and the rate of changes. The next stage of the process is to test out further variables of interest within our model and refine it to create a better predictive model. The predictive model will be validated based on an independent acoustic sample collected during May 11 through July this summer (or next given the closure of parks and forests) following the same collection standards specified for the data collected for this study. 
 
