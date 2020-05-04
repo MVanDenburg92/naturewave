@@ -313,11 +313,11 @@ lc_scaled <-lapply(landcover_list,function(x){
 })
 
 lc_stack <- stack(lc_scaled)
-lc_brick <- brick(lc_stack)
 
-
+#converts stack to brick
+# lc_brick <- brick(lc_stack)
 #write out the brick 
-writeRaster(lc_brick, file.path(path_out,"lc_stack_scaled.tif"), overwrite = TRUE)
+# writeRaster(lc_brick, file.path(path_out,"lc_stack_scaled.tif"), overwrite = TRUE)
 
 # b <- brick(file.path(path_in, "lc2500_brick.tif"))  # correct, reads in whole brick
 
