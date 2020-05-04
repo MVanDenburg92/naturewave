@@ -1,5 +1,5 @@
 #Feb/4/2020
-#Exploring relationship between envt factors and sound ecology 
+#Exploring relationship between envt factors and sound ecology
 install.packages("mefa")
 install.packages("plotly")
 #Libraries
@@ -31,7 +31,7 @@ DF_evt <- DF_evt %>% arrange(SITE)
 
 #------------------------------------------------------------------------------------------
 #Acoustic data cleanup
-#create new data frame with only acoustic index 
+#create new data frame with only acoustic index
 ACI_select<- ACI$LEFT_CHANNEL
 ADI_select<- ADI$LEFT_CHANNEL
 AEI_select <- AEI$LEFT_CHANNEL
@@ -41,7 +41,7 @@ NDSI_select<- NDSI$ndsi_left
 BIO_select<- NDSI$biophony_left
 ANT_select <- NDSI$anthrophony_left
 
-#ADD NDSI, Biophony, Antrophony 
+#ADD NDSI, Biophony, Antrophony
 
 #create Acoustic dataframe
 DF_sounds_sub<- data.frame(filenames, NDSI_select, BIO_select, ANT_select)
@@ -98,7 +98,7 @@ for (i in length(df_sounds)){
   if (names == names[11]){
     dat_LM <- subset(df_sounds, grepl(names[11], filenames))
   }else {
-    dat_BMB <- subset(df_sounds, grepl(names[1], filenames)) 
+    dat_BMB <- subset(df_sounds, grepl(names[1], filenames))
   }else{
     dat_BP <- subset(df_sounds, grepl(names[2], filenames))
   }else{
@@ -120,7 +120,7 @@ for (i in length(df_sounds)){
   }
 }
 
-#remove duplicates of eagle lake in dat_L 
+#remove duplicates of eagle lake in dat_L
 dat_L <- dat_L[!grepl("EL", dat_L$filenames),]
 
 
@@ -131,10 +131,10 @@ dat_L <- dat_L[!grepl("EL", dat_L$filenames),]
 # # these didnt work in loop
 # BP <- 'BP'
 # dat_BP <- subset(DF_sounds, grepl(BP, filenames))
-# 
+#
 # LM<- 'LM'
 # dat_LM <- subset(DF_sounds, grepl(LM, filenames))
-# 
+#
 # BMB<- 'BMB'
 # dat_BMB <- subset(DF_sounds, grepl(BMB, filenames))
 
@@ -201,7 +201,7 @@ DF_FullTable <- DF_FullTable %>% rename( SITE = Site.Name)
 DF_FullTable <- DF_FullTable %>% arrange(SITE)
 
 write.csv(DF_FullTable, file = "DF_FullTable.csv")
-# 
+#
 # DF_FullTable2 <- read.csv("DF_FullTable.csv")
 
 
@@ -211,19 +211,19 @@ write.csv(DF_FullTable, file = "DF_FullTable.csv")
 
 
 
-# #Join DF_evt and DF_Fulltable together to create a whole dataset which includes the buffer values and the sound indices values. 
+# #Join DF_evt and DF_Fulltable together to create a whole dataset which includes the buffer values and the sound indices values.
 # DF_FullTable <- DF_FullTable %>%  arrange(SITE)
-# DF_FullTable 
-# 
-# 
+# DF_FullTable
+#
+#
 # DF_Left_Join <- left_join(x = DF_FullTable, y = DF_evt)
 # DF_Left_Join
 # rownames(DF_Left_Join) = 1:dim(DF_Left_Join)[1]
-# 
-# 
-# 
-# 
-# 
+#
+#
+#
+#
+#
 # DF_Inner_Join <- inner_join(x = DF_FullTable, y = DF_evt)
 
 
@@ -234,7 +234,7 @@ DF_all_cbind <- bind_cols(DF_FullTable, DF_evt$MEAN_NDVI)
 DF_all_cbind <- cbind(DF_FullTable, DF_evt$MEAN_NDVI, DF_evt$MEAN_NDBI, DF_evt$Buffer_Meter)
 DF_all_cbind
 
-#renaming the columns of the newly combined data 
+#renaming the columns of the newly combined data
 
 # DF_all_cbind <- DF_all_cbind %>% rename( MEAN_NDVI = `DF_evt$MEAN_NDVI`, MEAN_NDBI = `DF_evt$MEAN_NDBI`,  Buffer = `DF_evt$Buffer_Meter`)
 # DF_Left_Join <- DF_Left_Join %>% rename(Buffer = `Buffer_Meter`)
@@ -259,14 +259,14 @@ DF <- DF_all_cbind
 DF <- read.csv("DF_Fulltable_CBIND.csv")
 
 
-#In the following code we use lmlist to run the regressions given we have data points taken at different buffers. 
-#In order to prevent grouping of the data for the calculation of the standard error, deviation, t statistics, and pvalues, 
-#we use pool: an optional logical value indicating whether a pooled estimate of the residual standard error should be used 
+#In the following code we use lmlist to run the regressions given we have data points taken at different buffers.
+#In order to prevent grouping of the data for the calculation of the standard error, deviation, t statistics, and pvalues,
+#we use pool: an optional logical value indicating whether a pooled estimate of the residual standard error should be used
 #in calculations of standard deviations or standard errors for summaries.
 
 #ACI
 lm_ACI_NDVI<- lmList(ACI_select ~ MEAN_NDVI | Buffer, data = DF, pool = FALSE)
-ACI_NDVI_lm <- summary(lm_ACI_NDVI)$r.squared 
+ACI_NDVI_lm <- summary(lm_ACI_NDVI)$r.squared
 
 lm_ACI_NDVI
 
@@ -279,7 +279,7 @@ ACI_NDVI_lm
 
 #ADI
 lm_ADI_NDVI<- lmList(ADI_select ~ MEAN_NDVI | Buffer, data = DF, pool = FALSE)
-ADI_NDVI_lm <- summary(lm_ADI_NDVI)$r.squared 
+ADI_NDVI_lm <- summary(lm_ADI_NDVI)$r.squared
 
 lm_ADI_NDVI
 
@@ -295,7 +295,7 @@ ADI_NDVI_lm
 lm_AEI_NDVI<- lmList(AEI_select ~ MEAN_NDVI | Buffer, data = DF, pool = FALSE)
 summary(lm_AEI_NDVI)
 
-AEI_NDVI_lm <- summary(lm_AEI_NDVI)$r.squared 
+AEI_NDVI_lm <- summary(lm_AEI_NDVI)$r.squared
 
 lm_AEI_NDVI
 
@@ -314,7 +314,7 @@ plot(lm_AEI_NDVI, resid(., type = "pool") ~ fitted(.) | Buffer, abline = 0, id =
 #BI
 
 lm_BI_NDVI<- lmList(BI_select ~ MEAN_NDVI | Buffer, data = DF, pool = FALSE)
-BI_NDVI_lm <- summary(lm_BI_NDVI)$r.squared 
+BI_NDVI_lm <- summary(lm_BI_NDVI)$r.squared
 
 lm_BI_NDVI
 
@@ -417,8 +417,9 @@ cor(x = cor_2000_ANT, y = cor_2000_NDBI)
 
 buffername <- c(500, 1000,1500,2000,2500,3000)
 
-linear_rsquared <- data.frame(buffername, ACI_NDVI_lm, ACI_NDBI_lm, ADI_NDVI_lm, ADI_NDBI_lm, AEI_NDVI_lm, AEI_NDBI_lm, BI_NDVI_lm, BI_NDBI_lm, NDSI_NDVI_lm, NDSI_NDBI_lm, BIO_NDVI_lm, BIO_NDBI_lm, ANT_NDVI_lm, ANT_NDBI_lm)
+linear_rsquared_old <- data.frame(buffername, ACI_NDVI_lm, ACI_NDBI_lm, ADI_NDVI_lm, ADI_NDBI_lm, AEI_NDVI_lm, AEI_NDBI_lm, BI_NDVI_lm, BI_NDBI_lm, NDSI_NDVI_lm, NDSI_NDBI_lm, BIO_NDVI_lm, BIO_NDBI_lm, ANT_NDVI_lm, ANT_NDBI_lm)
 
+write.csv(linear_rsquared_old, 'linear_rsquared_old.csv', row.names = FALSE)
 
 #-------------------------------------------------------------------------------------------------------------------------
 #Graphs
@@ -427,15 +428,15 @@ linear_rsquared <- data.frame(buffername, ACI_NDVI_lm, ACI_NDBI_lm, ADI_NDVI_lm,
 #graph of R^2 for NDVI
 
 
-RSquaredPlot_NDVI <- ggplot(data = linear_rsquared) + 
+RSquaredPlot_NDVI <- ggplot(data = linear_rsquared_2) +
   geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$ACI_NDVI_lm, color = 'ACI')) +
   geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$ADI_NDVI_lm, color = 'ADI')) +
   geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$AEI_NDVI_lm, color = 'AEI')) +
   geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$BI_NDVI_lm, color = 'BI')) +
   geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$NDSI_NDVI_lm, color = 'NDSI'))+
   geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$BIO_NDVI_lm, color = 'BIOPHONY'))+
-  geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$ANT_NDVI_lm, color = 'ANTHRO')) +  
-  labs(title = "Mean NDVI ~ R squared of metrics",x ="Focal Distance (meters)", y = "R squared of metrics") 
+  geom_line(aes(x=linear_rsquared$buffername, y=linear_rsquared$ANT_NDVI_lm, color = 'ANTHRO')) +
+  labs(title = "Mean NDVI ~ R squared of metrics",x ="Focal Distance (meters)", y = "R squared of metrics")
 
 ggplotly(RSquaredPlot_NDVI)
 
@@ -443,15 +444,15 @@ ggplotly(RSquaredPlot_NDVI)
 
 #graph of R^2 for NDBI
 
-RSquaredPlot_NDBI <- ggplot(data = linear_rsquared) + 
+RSquaredPlot_NDBI <- ggplot(data = linear_rsquared) +
   geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$ACI_NDBI_lm, color = 'ACI'))+
   geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$ADI_NDBI_lm, color = 'ADI')) +
   geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$AEI_NDBI_lm, color = 'AEI')) +
   geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$BI_NDBI_lm, color = 'BI')) +
   geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$NDSI_NDBI_lm, color = 'NDSI'))+
   geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$BIO_NDBI_lm, color = 'BIOPHONY'))+
-  geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$ANT_NDBI_lm, color = 'ANT')) + scale_x_log10() + 
-  labs(title = "Mean NDBI ~ R squared of metrics",x ="Focal Distance (meters)", y = "R squared of metrics") 
+  geom_line (aes(x=linear_rsquared$buffername, y=linear_rsquared$ANT_NDBI_lm, color = 'ANT')) + scale_x_log10() +
+  labs(title = "Mean NDBI ~ R squared of metrics",x ="Focal Distance (meters)", y = "R squared of metrics")
 
 
 #interactive GGPlot NDBI
@@ -470,17 +471,17 @@ ggplotly(RSquaredPlot_NDBI)
 ggplot(data = DF, aes (x = MEAN_NDVI, y = AEI_select, group = Buffer, color = factor(Buffer))) +
   # geom_line(data = fortify(fit), aes(x = MEAN_NDVI, y = .fitted)) +
   geom_smooth(method = "lm", se = FALSE) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
-  labs(y="AEI", x = "NDVI") 
+  labs(y="AEI", x = "NDVI")
 
 
 
 ggplot(data = DF, aes(x = MEAN_NDVI, y = AEI_select, group=Buffer, color = factor(Buffer))) +
   # geom_line(data = fortify(fit), aes(x = MEAN_NDVI, y = .fitted)) +
   geom_smooth(method = "lm") +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   geom_line(data = fortify(fit), aes(x = MEAN_NDVI, y = .fitted)) +
   theme(legend.position = "right") +
@@ -491,7 +492,7 @@ ggplot(data = DF, aes(x = MEAN_NDVI, y = AEI_select, group=Buffer, color = facto
 
 ggplot(data = DF, aes(x = MEAN_NDVI, y = ACI_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="ACI", x = "NDVI") + geom_abline()
@@ -499,7 +500,7 @@ ggplot(data = DF, aes(x = MEAN_NDVI, y = ACI_select, group=Buffer, color = facto
 #NDVI vs Biophony (BIO_SELECT)
 ggplot(data = DF, aes (x = MEAN_NDVI, y = BIO_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="BIO_select", x = "NDVI")
@@ -507,16 +508,16 @@ ggplot(data = DF, aes (x = MEAN_NDVI, y = BIO_select, group=Buffer, color = fact
 #NDVI vs Anthrophony (ANT_SELECT)
 ggplot(data = DF, aes (x = MEAN_NDVI, y = ANT_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
-  theme(legend.position = "right") +  
+  theme(legend.position = "right") +
   labs(y="ANT_select", x = "NDVI")
 
 
 #NDVI vs NDSI Facets wrap
 corr_2000_NDSI <- ggplot(data = DF, aes (x = MEAN_NDVI, y = NDSI_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="NDSI", x = "NDVI") +
@@ -527,8 +528,8 @@ corr_2000_NDSI <- ggplot(data = DF, aes (x = MEAN_NDVI, y = NDSI_select, group=B
 lm_NDSI_NDBIO_NDVI[["2000"]][["model"]]
 
 
-ggscatter(my_data, x = "mpg", y = "wt", 
-          add = "reg.line", conf.int = TRUE, 
+ggscatter(my_data, x = "mpg", y = "wt",
+          add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Miles/(US) gallon", ylab = "Weight (1000 lbs)")
 
@@ -537,7 +538,7 @@ ggscatter(my_data, x = "mpg", y = "wt",
 
 ggplot(data = DF, aes (x = MEAN_NDVI, y = NDSI_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="NDSI", x = "NDVI")
@@ -551,7 +552,7 @@ ggplot(data = DF, aes (x = MEAN_NDVI, y = NDSI_select, group=Buffer, color = fac
 #NDVI
 ggplot(data = DF, aes (x = MEAN_NDBI, y = ACI_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="ACI", x = "NDBI")
@@ -561,7 +562,7 @@ ggplot(data = DF, aes (x = MEAN_NDBI, y = ACI_select, group=Buffer, color = fact
 #NDBI vs Biophony (BIO_SELECT)
 ggplot(data = DF, aes (x = MEAN_NDBI, y = BIO_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="BIO_select", x = "NDBI")
@@ -569,16 +570,16 @@ ggplot(data = DF, aes (x = MEAN_NDBI, y = BIO_select, group=Buffer, color = fact
 #NDBI vs Anthrophony (ANT_SELECT)
 ggplot(data = DF, aes (x = MEAN_NDBI, y = ANT_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
-  theme(legend.position = "right") +  
+  theme(legend.position = "right") +
   labs(y="ANT_select", x = "NDBI")
 
 
 #NDBI vs NDSI Facets Wrap
 ggplot(data = DF, aes (x = MEAN_NDBI, y = NDSI_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="NDSI", x = "NDBI") +
@@ -588,24 +589,24 @@ ggplot(data = DF, aes (x = MEAN_NDBI, y = NDSI_select, group=Buffer, color = fac
 
 ggplot(data = DF, aes (x = MEAN_NDBI, y = NDSI_select, group=Buffer, color = factor(Buffer))) +
   geom_smooth(method = "lm", se=F) +
-  geom_point(alpha=0) + 
+  geom_point(alpha=0) +
   geom_point(aes(color = factor(Buffer)))+
   theme(legend.position = "right") +
   labs(y="NDSI", x = "NDBI")
 
 
-# 
+#
 # #examine coefficients matrix from m1_Summary list
 # m1_Summary$coefficients
-# 
+#
 # #Extract pvalue from m1_Summary$coefficients
 # my.p <- m1_Summary$coefficients[2, 4]
-# 
+#
 # m1_Summary$coefficients[[1]]
 # m1_Summary$coefficients[[2]]
-# 
+#
 # coef(lm(MEAN_NDVI ~ AEI_select, data = DF))
-# 
+#
 # + geom_abline(intercept = 37, slope = -5)
 
 

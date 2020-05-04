@@ -28,8 +28,7 @@ library(maps)
 # read_csv(system.file("naturewave/external/DF_Fulltable_CBIND.csv", 
 #                                 package = "naturewave"))
 
-setwd(dir = "../external/data/")
-DF <- read.csv("DF_Fulltable_CBIND.csv")
+DF <- read.csv("../inst/extdata/DF_Fulltable_CBIND.csv")
 
 
 DF_NDSI <- DF %>% dplyr::select(SITE, NDSI_select, Buffer)
@@ -45,8 +44,7 @@ DF_Transposed_NDSI <- pivot_wider(DF_NDSI, names_from = Buffer, values_from = ND
 # sample_points_f <- st_read("sample_sites_projected.shp")
 
 
-setwd("../external/data/sample_sites/")
-sample_points_f <- st_read("sample_sites_projected.shp")
+sample_points_f <- st_read("../inst/extdata/sample_sites_projected.shp")
 
 sample_points_f <- sample_points_f %>% dplyr::select(-OBJECTID_1)
 
@@ -91,8 +89,8 @@ st_crs(sample_points_f)
 
 ## ----include=FALSE, warning = FALSE, message = FALSE--------------------------
 # Import AOI shapefile containing site
-setwd("../external/data/sample_sites/")
-AOI <- st_read("AOI.shp")
+
+AOI <- st_read("../inst/extdata/AOI.shp")
 AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 
 #import counties for US
@@ -125,10 +123,16 @@ plot(ma_crop)
 
 ## ---- warning = FALSE, message = FALSE----------------------------------------
 
+
+## Two ways of bringing in the Tif Files
+
+### [1] One by One
+### [2] All at once
+
 ###[1]
 
 #import immperviousness raster file
-imperv <- raster("../external/data/Amherst_CAPS2011/imperv.tif", crs = crs(sample_points_f))
+imperv <- raster("../inst/extdata/imperv.tif", crs = crs(sample_points_f))
 
 ##Plot code to test tif
 # plot(imperv)
@@ -145,7 +149,7 @@ imperv_cropped <- crop(imperv, y = ma_crop)
 
 #import connectedness raster file
 
-connect <- raster("../external/data/Amherst_CAPS2011/connect.tif", crs = crs(sample_points_f))
+connect <- raster("../inst/extdata/connect.tif", crs = crs(sample_points_f))
 
 ##Plot code to test tif
 # plot(connect)
@@ -161,7 +165,7 @@ connect_cropped <- crop(connect, y = ma_crop)
 
 
 #import structure raster file
-structure <- raster("../external/data/Amherst_CAPS2011/structure.tif", crs = crs(sample_points_f))
+structure <- raster("../inst/extdata/structure.tif", crs = crs(sample_points_f))
 
 ##Plot code to test tif
 # plot(structure)
@@ -179,7 +183,7 @@ structure_cropped <- crop(structure, y = ma_crop)
 # Data source: landcover, traffic rates
 
 #import connectedness raster file
-traffic <- raster("../external/data/Amherst_CAPS2011/traffic.tif", crs = crs(sample_points_f))
+traffic <- raster("../inst/extdata/traffic.tif", crs = crs(sample_points_f))
 ##Plot code to test tif
 # plot(traffic)
 # plot(sample_points_f, col = "green", add = TRUE)
@@ -212,7 +216,7 @@ f <- dir("../external/data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif
 landcover_list <- list(connect_cropped, imperv_cropped, structure_cropped, traffic_cropped)
 names(landcover_list) <- gsub("tif", "", basename(f))
 
-#[2]  all together
+###[2]  all together
 
 # f <- dir("./data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif")
 # landcover <- lapply(unname(f), function(x) {
@@ -259,7 +263,7 @@ plot(lc_stack)
 # The focal function operates on the matrix, regardless of it being circular or rectangular and assigns the resulting value to the center cell. In a binary matrix values with 1 would be operated on and those with 0, ignored. A circular window is a rectangular matrix where, values occuring outside the defined radius are 0. 
 
 
-# Since we are interested in the range of the recording device and because we have assigned a consistent value across the buffers for NDSI, ANT, and BIO varying per site per metric, we are going to use a focalWeight circle to replicate the 3000m buffer and pass it over the entirety of the images for imperv, connect, and structure. This will give us a raster for each and 
+# Since we are interested in the range of the recording device and because we have assigned a consistent value across the buffers for NDSI, ANT, and BIO varying per site per metric, we are going to use a focalWeight circle to replicate the 3000m buffer and pass it over the entirety of the images for imperv, connect, and structure. This will give us a raster for each 
 
 
 #2 apply circular moving window to continuous data
@@ -339,8 +343,10 @@ lc2500 <- lapply(1:4, function(x) {  # x <- 1
   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2500[[x]]), filename = f, overwrite = TRUE)
   return(r)
 })
-lc2500_stacked <- stack(lc2500)  # stack
+lc2500_stacked <- stack(lc2500)  # Stack
 
+
+# lc2500_brick <- brick(lc2500_stacked) # Brick
 
 # Plotting out the results
 tit3 <- "2500 (m) Buffer"
@@ -362,6 +368,9 @@ writeRaster(lc2500_stacked[[1]], file.path(path_out,"lc2500_connect.tif"), overw
 writeRaster(lc2500_stacked[[2]], file.path(path_out,"lc2500_imperv.tif"), overwrite = TRUE)
 writeRaster(lc2500_stacked[[3]], file.path(path_out,"lc2500_structure.tif"), overwrite = TRUE)
 writeRaster(lc2500_stacked[[4]], file.path(path_out, "lc2500_traffic.tif"), overwrite = TRUE)
+
+# writeRaster(lc2500_brick, file.path(path_out,"lc2500_brick.tif"), overwrite = TRUE)
+# write out the brick 
 
 
 ## ----eval = FALSE, include=FALSE, warning = FALSE, message = FALSE------------
@@ -444,7 +453,7 @@ pts_2500 <- cbind(pts1, raster::extract(lc2500_stacked, pts1)) # buffer points 2
 write.csv(pts_2500, file.path(path_out,"fv_pts_2500.csv"), row.names = FALSE)
 
 
-## ----include=FALSE, warning = FALSE, message = FALSE--------------------------
+## ----include=TRUE, warning = FALSE, message = FALSE---------------------------
 set.seed(1)
 buffs_extract <- lapply(c(500, 1000, 1500, 2000, 2500, 3000), function(x) { 
   #2a
@@ -758,7 +767,7 @@ write.csv(Imperv_connect_Struct_Traffic_NDSI,
 # plot(st_geometry(pts), add = TRUE)
 
 
-## ----include=FALSE, warning = FALSE, message = FALSE--------------------------
+## ----include=TRUE, warning = FALSE, message = FALSE---------------------------
 #NDSI vs Impervious
 lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, 
                          data = Imperv_connect_Struct_Traffic_NDSI, 
@@ -808,6 +817,7 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI,
     y = Imperv_connect_Struct_Traffic_NDSI$Traffic)
 
 ## ----include=FALSE, warning = FALSE, message = FALSE--------------------------
+### Code to create linear correlations between ANT and  Imperviousness, connectedness, Structure, Traffic
 #Anthrophony vs Impervious
 lm_ANT_Imperv <- lmList(Anthrophony ~ Imperv | Buffer, 
                         data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
@@ -855,6 +865,8 @@ cor(x = Imperv_connect_Struct_Traffic_NDSI$Anthrophony,
     y = Imperv_connect_Struct_Traffic_NDSI$Traffic)
 
 ## ----include=FALSE, warning = FALSE, message = FALSE--------------------------
+
+# Code to create linear correlations between BIO and Imperviousness, connectedness, structure, Traffic
 #Biophony vs Impervious
 
 lm_BIO_Imperv <- lmList(Biophony ~ Imperv | Buffer, 
@@ -933,7 +945,7 @@ RSquaredPlot_NDSI <- ggplot(data = linear_rsquared) +
   labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)", 
        y = "R squared of metrics") 
 
-plot(RSquaredPlot_NDSI)
+RSquaredPlot_NDSI
 plotly::ggplotly(RSquaredPlot_NDSI)
 
 
@@ -954,7 +966,7 @@ RSquaredPlot_ANT <- ggplot(data = linear_rsquared) +
   labs(title = "Mean ANT ~ R squared of metrics", x ="Focal Distance (meters)", 
        y = "R squared of metrics") 
 
-plot(RSquaredPlot_ANT)
+RSquaredPlot_ANT
 plotly::ggplotly(RSquaredPlot_ANT)
 
 
@@ -975,7 +987,7 @@ RSquaredPlot_Bio <- ggplot(data = linear_rsquared) +
   labs(title = "Mean BIO ~ R squared of metrics", x ="Focal Distance (meters)", 
        y = "R squared of metrics") 
 
-plot(RSquaredPlot_Bio)
+RSquaredPlot_Bio
 plotly::ggplotly(RSquaredPlot_Bio)
 
 

@@ -3,33 +3,34 @@
 knitr::opts_chunk$set(echo = TRUE)
 
 
-## ---- eval= FALSE-------------------------------------------------------------
-#  ############################################################################
-#  
-#  #Install libraries
-#  library(sf)
-#  # install.packages("randomForest")
-#  require(randomForest)
-#  library(dplyr)
-#  # install.packages("caTools")
-#  library(caTools)
-#  library(raster)
-#  library(rgdal)
-#  library(geospaar)
+## ---- eval= TRUE, include=FALSE-----------------------------------------------
+############################################################################
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
-##############################   Random Forest Regression at 2500###############################
+#Install libraries
+library(sf)
+# install.packages("randomForest")
+require(randomForest)
+library(dplyr)
+# install.packages("caTools")
+library(caTools)
+library(raster)
+library(rgdal)
+library(geospaar)
+library(leaflet)
+
+## ---- eval = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 
 # Data reading
 
 path_out <- '../inst/extdata'
 
 
-DS <- read.csv('Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
+DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
 
 
 # Filter values using 2500 as the scale of best influence
-DS_2500 <- DS %>% filter(Buffer == "Buffer 2500 (m)") %>% dplyr::select(-c(X,Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
+DS_2500 <- DS %>% dplyr::filter(Buffer == "Buffer 2500 (m)") %>%
+  dplyr::select(-c(Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
 
 # Scale variable values except NDSI values 
 DS_2500_scaled <- DS_2500[,1:4]/255
@@ -64,13 +65,13 @@ randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer lev
 # fslc <- dir("../inst/extdata", pattern = "lc2500*.tif", full.names = TRUE)
 
           
-Imperv <- raster("lc2500_imperv.tif")
-Connectedness <- raster("lc2500_connect.tif")
-Structure <- raster("lc2500_structure.tif")
-Traffic <- raster("lc2500_traffic.tif")
+Imperv <- raster("../inst/extdata/lc2500_imperv.tif")
+Connectedness <- raster("../inst/extdata/lc2500_connect.tif")
+Structure <- raster("../inst/extdata/lc2500_structure.tif")
+Traffic <- raster("../inst/extdata/lc2500_traffic.tif")
 
 # Create a raster stack
-landcover_ls <- list(Imperv, Connectdness, Structure, Traffic)
+landcover_ls <- list(Imperv, Connectedness, Structure, Traffic)
 names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
 
 my_stack <- stack(landcover_ls)
@@ -96,4 +97,16 @@ names(ndsi_pred) <- c("NDSI_Prediction")
 
 stack_final <- stack(my_stack,ndsi_pred)
 geospaar::plot_noaxes(stack_final)
+
+
+pal2 <- colorNumeric(c("#F2F2F2FF","#EEB99FFF", "#EAB64EFF","#E6E600FF","#00A600FF"), values(ndsi_pred), na.color = "transparent")
+pal3 <- colorNumeric(c("#00A600FF","#E6E600FF","#EAB64EFF","#EEB99FFF","#F2F2F2FF"), values(ndsi_pred), na.color = "transparent")
+
+leaflet() %>% addTiles() %>% addCircleMarkers(lng = sites$Long, lat = sites$Lat, weight = 1, popup = sites$Site) %>% 
+  addRasterImage(ndsi_pred, colors = pal2, opacity = 0.8) %>%
+  addLegend(pal = pal3, values = values(ndsi_pred), labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),title = "Predicted NDSI Values")
+
+
+
+
 
