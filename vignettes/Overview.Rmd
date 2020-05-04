@@ -76,7 +76,7 @@ Once the correlation is established, we use random forest regression to examine 
       raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/traffic.zip
 
 
-#### Acoustic Indices:
+#### Acoustic Index:
 * NDSI (Normalized Difference Soundscape Index (NDSI)
 * (Biophony - Anthrophony)/(Biophony + Anthrophony)
 
