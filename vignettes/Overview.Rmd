@@ -21,9 +21,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Overview{#overview}
-  
-A brief (up to 250 words) description of the project, and a bullet point or enumerated list of its primary objectives.
 
+
+## Objective
 The objective of this package and research is to assess the relationships
 between habitat quality and biodiversity in a highly fragmented and human-dominated
 forested landscape in Massachusetts, through a geospatial analysis lens, integrating spatial
@@ -36,58 +36,313 @@ In order to do this, we created Naturewave. Naturewave is a package created to a
 
 Within the package we identify the scale of best influence (the buffer size where acoustic indices are peak) across each sampling location by examining the R2 values of each of the variables at different buffer sizes.
 
-Anthropogenic Variables 
--- Imperviousness
--- Connectedness
--- Vegetative structure
--- Traffic
 
-Acoustic Indices:
--- NDSI
--- Biophony
--- Anthrophony
+
+### Anthropogenic Variables of Interest
+
+
+* Imperviousness
+
+      raw: http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/imperv.zip
+
+
+* Connectedness
+
+      raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/connect.zip
+      
+
+* Vegetative structure
+
+        http://jamba.provost.ads.umass.edu/web/caps2011/tiffzips/settings/structure.zip
+      
+
+* Road traffic
+
+      raw:http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/traffic.zip
+
+
+### Acoustic Indices:
+* NDSI (Normalized Difference Soundscape Index (NDSI)
+* (Biophony - Anthrophony)/(Biophony + Anthrophony)
 
 Once the correlation is established, we use random forest regression to examine the importance of the variables of interest and predict NDSI values across the study area. 
 
-  
-  
-# Approach and Method 
-An outline of the analytical methods and code you plan to use, including the names of key packages that you will draw on. This section should be composed of the following sub-sections:
-  
-## Data 
-A brief (~250 words) description and visualization of the datasets you will be using. That means spatial plots of the main datasets and their key values, and, as a bonus, a plot of summary statistics, e.g. a histogram or boxplot of one of the more importants variables in the dataset.
+
 
 ## Methodology 
+
+### Preliminary Work
+
 Approach used to formulate sound indices and habitat quality measures:
 
 - Wildlife Acoustic SM4 sound recorders were installed during June and July of 2019 and programmed to extract audio samples from 4 AM-6 AM for five days. A total of eleven sites were sampled, including 10 samples in Mass Audubon sites throughout central Massacchusetts (MA), and one sample in Leadmine Mountain forest in Sturbridge (MA).  
 - From these soundscapes, the Normalized Difference Soundscape Index, (NDSI), Biophony (sounds from biodiversity),  Anthrophony (sounds from humans), Bioacoustics Index (BI), Acoustic Complexity Index (ACI),  Acoustic Diversity Index (ADI), and Acoustic Evenness Index (AEI) were calculated. The relationship between these indices and habitat quality measures were extracted. 
 - Habitat quality components were identified as the vegetation productivity, measured as the normalized difference vegetation index (NDVI), built-up magnitude, measured as the normalized difference-built index NDBI, and traffic influence, measured as distance from primary, secondary, and tertiary roads. 
 - NDVI and NDBI were calculated using Sentinel-2 imagery from Google Earth Engine. Relationships of NDBI and NDBI were extracted at multiple distance buffers from recoding sites to evaluate the scale at which these habitat quality measures had the highest influence on biodiversity. 
+- After entering in the values into linear models, the r^2 values were derived and then plotted out 
+as seen in Figure 1 below.
 
-  
-```{r}
+
+
+#### Code Chunk 1: Pearson correlation coefficient for each measured index at multiple scales.
+
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+#[1]
+
+library(ggplot2)
+
+rsquared_old <- read.csv("../inst/extdata/linear_rsquared_old.csv")
+
+RSquaredPlot_NDVI <- ggplot(data = rsquared_old) + 
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$ACI_NDVI_lm, color = 'ACI')) +
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$ADI_NDVI_lm, color = 'ADI')) +
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$AEI_NDVI_lm, color = 'AEI')) +
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$BI_NDVI_lm, color = 'BI')) +
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$NDSI_NDVI_lm, color = 'NDSI'))+
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$BIO_NDVI_lm, color = 'BIOPHONY'))+
+  geom_line(aes(x=rsquared_old$buffername, y=rsquared_old$ANT_NDVI_lm, color = 'ANTHRO')) +  
+  labs(title = "Mean NDVI ~ R squared of metrics",x ="Focal Distance (meters)", y = "R squared of metrics") 
+
+plotly::ggplotly(RSquaredPlot_NDVI)
+
+
+```
+
+### Prelim Results 
+
+- Based on the results of the above examination, it was determined that NDSI had the strongest relationship with NDVI and NDBI. Given the result we relied on NDSI as our proxy to use in examining the relationship between landscape/ecological variables of interest and acoustic indices. 
+
+### New Linear Models
+- We used a combination of linear regression methods to assess the correlation of variables and sound indices, and identified the buffer size or scale of best influence for NDSI values across the study area using the Pearson’s Correlation Coefficient for each measured variable at multiple scales/buffers. 
+
+#### Code Chunk 2: Code used to create linear models between NDSI and the variables of interest
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+#[2]
+# #NDSI vs Impervious
+# lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, 
+#                          data = Imperv_connect_Struct_Traffic_NDSI, 
+#                          pool = FALSE)
+# NDSI_Imperv_lm <- summary(lm_NDSI_Imperv)$r.squared
+# 
+# plot(lm_NDSI_Imperv)
+# NDSI_Imperv_lm
+# 
+# cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI,
+#     y = Imperv_connect_Struct_Traffic_NDSI$Imperv)
+# 
+# 
+# #NDSI vs Connectedness
+# 
+# lm_NDSI_Connect <- lmList(NDSI ~ Connectdness | Buffer, 
+#                           data = Imperv_connect_Struct_Traffic_NDSI,
+#                           pool = FALSE)
+# 
+# NDSI_Connect_lm <-summary(lm_NDSI_Connect)$r.squared
+# 
+# cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, 
+#     y = Imperv_connect_Struct_Traffic_NDSI$Connectdness)
+# 
+# 
+# 
+# ##NDSI vs Structuredness
+# 
+# lm_NDSI_Structure <- lmList(NDSI ~ Structure | Buffer, 
+#                             data = Imperv_connect_Struct_Traffic_NDSI, 
+#                             pool = FALSE)
+# 
+# NDSI_Structure_lm <-summary(lm_NDSI_Structure)$r.squared
+# 
+# cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI, 
+#     y = Imperv_connect_Struct_Traffic_NDSI$Structure)
+# 
+# 
+# 
+# ##NDSI vs Traffic
+# 
+# lm_NDSI_Traffic <- lmList(NDSI ~ Traffic | Buffer, 
+#                           data = Imperv_connect_Struct_Traffic_NDSI, pool = FALSE)
+# NDSI_Traffic_lm <-summary(lm_NDSI_Traffic)$r.squared
+# 
+# cor(x = Imperv_connect_Struct_Traffic_NDSI$NDSI,
+#     y = Imperv_connect_Struct_Traffic_NDSI$Traffic)
+
+
+```
+
+
+- Once we identified the buffer size representing the highest scale of influence (in our case given 2500m) we used a focalWeight circle to replicate the 2500m buffer and passed it over the entirety of the images for imperv, connect, and structure to obtain a  weighted matrix for each. We then used the focal function to pass over each image pixel, and multiplied those weights by each pixel value in the neighborhood, and then summed those to get the mean value raster image for each variable across the entire study area.
+
+
+#### Code Chunk 3: Focal Mean using a circular focalweight at a buffer of 2500 m 
+
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'}
+#[3]
+
+library(raster)
+library(maps)
+library(dplyr)
+library(sf)
+
+#path to read in files
+path_in <- '../inst/extdata'
+
+# ##Runs focal at a buffer weight of 2500 m radius
+# 
+# radius3 <- 2500
+# lc2500 <- lapply(1:4, function(x) {  # x <- 1
+#   f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius3, ".tif")
+#   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2500[[x]]), filename = f, overwrite = TRUE)
+#   return(r)
+# })
+# lc2500_stacked <- stack(lc2500)  # Stack
+
+#Read in files post focal weights 
+Imperv <- raster("../inst/extdata/lc2500_imperv.tif")
+Connectedness <- raster("../inst/extdata/lc2500_connect.tif")
+Structure <- raster("../inst/extdata/lc2500_structure.tif")
+Traffic <- raster("../inst/extdata/lc2500_traffic.tif")
+
+# Create a raster stack
+landcover_ls <- list(Imperv, Connectedness, Structure, Traffic)
+names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
+
+my_brick <- brick(landcover_ls)
+
+
+# b <- brick(file.path(path_in, "lc2500_brick.tif"))  # correct, reads in whole brick
+
+# mass <- st_as_sf(map(database = "state", plot = FALSE, fill = TRUE)) %>% lwgeom::st_make_valid() %>% filter(ID == "massachusetts")
+
+# par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
+plot(my_brick, axes = FALSE, box = FALSE)
+
+```
+
+
+- Random forest regression was used to evaluate the variables and find out their order of importance at predicting NDSI values. Finally, we created a model that takes NDSI values at 2500 meters buffer from the sampling location in combination with the mean value raster images in order to estimate NDSI values for the entire study area. 
+
+
+#### Code Chunk 4: Code to train and create random forest model
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+#[4]
+DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
+
+
+# Filter values using 2500 as the scale of best influence
+DS_2500 <- DS %>% dplyr::filter(Buffer == "Buffer 2500 (m)") %>%
+  dplyr::select(-c(Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
+
+# Scale variable values except NDSI values 
+DS_2500_scaled <- DS_2500[,1:4]/255
+
+# Use mutate to add NDSI values back to the table. 
+DS_2500_scaled <- DS_2500_scaled %>% mutate("NDSI" = DS_2500$NDSI)
+
+# Create training and testing samples
+sample = caTools::sample.split(DS_2500$NDSI, SplitRatio = .75)
+train = subset(DS_2500, sample == TRUE)
+test  = subset(DS_2500, sample == FALSE)
+
+# Check out the dimensions of each sample set
+dim(train)
+dim(test)
+
+# Create RandomForest Model
+set.seed(100)
+rf_2500 <- randomForest::randomForest(NDSI ~., data=DS_2500_scaled, mtry= 2, importance = TRUE, na.action=na.omit)
+
+print(rf_2500)
 
 ```
 
 
 
-- Based on the results of the above examination, it was determined that NDSI had the strongest relationship with NDVI and NDBI. Given the result we relied on NDSI as our proxy to use in examining the relationship between landscape/ecological variables of interest and acoustic indices. 
-- We used a combination of linear regression methods to assess the correlation of variables and sound indices, and identified the buffer size or scale of best influence for NDSI values across the study area using the Pearson’s Correlation Coefficient for each measured variable at multiple scales/buffers. 
-Once we identified the buffer size representing the highest scale of influence we used a focalWeight circle to replicate the 2500m buffer and passed it over the entirety of the images for imperv, connect, and structure to obtain a  weighted matrix for each. We then used the focal function to pass over each image pixel, and multiplied those weights by each pixel value in the neighborhood, and then summed those to get the mean value raster image for each variable across the entire study area.
-Random forest regression was used to evaluate the variables and find out their order of importance at predicting NDSI values. Finally, we created a model that takes NDSI values at 2500 meters buffer from the sampling location in combination with the mean value raster images in order to estimate NDSI values for the entire study area. 
-
 ## Results
 
 ### Results from linear correlation and R squares. 
+
 By examining the R square values from the linear correlation using Pearson’s Correlation Coefficient  between the variables of interest and NDSI, we were able to identify the scale at which NDSI values were most significant. At 2500 meters from the sampling location, NDSI values can be considered as representative for the landscape across the study area. 
 
+
+#### Code Chunk 5: Code to run R^2 Plot of Variables vs NDSI Sound Index
+
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+#[5]
+
+library(ggplot2)
+
+linear_rsquared_new <- read.csv("../inst/extdata/linear_rsquared_traffic_included.csv")
+
+RSquaredPlot_NDSI <- ggplot(data = linear_rsquared_new) +
+  geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Imperv_lm,
+                color = 'Imperv')) +
+  geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Structure_lm,
+                color = 'Structure')) +
+  geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Connect_lm,
+                color = 'Connect')) +
+ geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Traffic_lm,
+               color = 'Traffic')) + scale_x_log10() +
+  labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)",
+       y = "R squared of metrics")
+
+plotly::ggplotly(RSquaredPlot_NDSI)
+```
+
+
 ### Random Forest Regression Results
+
 We selected four independent variables (Imperviousness, Connectedness, Vegetative Structure, and Traffic) to test their level of importance in predicting NDSI values. The results of the random forest regression at different buffer sizes or scale of best influence revealed that Traffic and Imperviousness are the variables with a higher explanatory power at predicting NDSI values across the study area. We determined this by looking at the Variable Importance Plot which list Traffic and Imperviousness at the top of the variables list. By looking at the %IncMSE at the 2500 scale of best influence, 
 Mean square-error (%IncMSE) and node purity (incNodePurity) are the measurements returned after running the RandomForest algorithm. %IncMSE provides the prediction ability of mean square error with randomly permuted variables; whereas, IncNodePurity calculates the loss when best splits are determined by a given variable. 
-Traffic has a %IncMSE of 9.61 and Imperviousness has a %IncMSE value of 6.69. These two variables are the most important in the regression. They are the ones used to better split the nodes of the regression and achieve higher increases in node purities.    
+Traffic has a %IncMSE of 9.61 and Imperviousness has a %IncMSE value of 6.69. These two variables are the most important in the regression. They are the ones used to better split the nodes of the regression and achieve higher increases in node purities. 
+
+
+#### Code Chunk 6: Variable Importance Results of RF Regression
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+#[6]
+# Show "importance" of variables: higher value means more important:
+round(randomForest::importance(rf_2500), 2)
+
+# Visualize Variable Importance Plot
+randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer level")
+```
+
+
 ### Predictive Modeling Results:
 The result from modeling is a continuous surface predicting NDSI values across the landscape based on the values observed at the 2500 meters buffer, which was identified as the scale of best influence. The predictive NDSI surface is biophyscally reasonable because it indicates high concentrations of NDSI values away from areas that are highly developed and have high levels of traffic. Vegetation structure and connectedness are also contributors to NDSI values but to a less extent compared to the imperviousness and traffic. Vegetation structure and connectedness provide good indicators for habitat assessment and connectivity. 
+
+
+#### Code Chunk 7: Code to Plot out the Predicted NDSI Values using Leaflet
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+library(leaflet)
+#[7]
+# Use raster::predict to predict NDSI values across the landscape
+ndsi_pred <- raster::predict(object = my_brick, model=rf_2500, type = 'response', index = 5)
+ndsi_pred
+
+# Display NDSI prediction layer with sample locations. First, set the CRS for the sampling locations to match the one from the raster image
+
+sites <- st_read(dsn = "../inst/extdata/sample_sites_projected.shp")
+sites <- st_transform(x = sites, crs = st_crs(ndsi_pred))
+
+# Plot variables and predicted NDSI raster image
+
+# Rename ndsi_pred
+names(ndsi_pred) <- c("NDSI_Prediction")
+
+
+
+#Code below creates an interactive leaflet map with clickable sites
+
+pal2 <- colorNumeric(c("#F2F2F2FF","#EEB99FFF", "#EAB64EFF","#E6E600FF","#00A600FF"), values(ndsi_pred), na.color = "transparent")
+pal3 <- colorNumeric(c("#00A600FF","#E6E600FF","#EAB64EFF","#EEB99FFF","#F2F2F2FF"), values(ndsi_pred), na.color = "transparent")
+
+leaflet() %>% addTiles() %>% addCircleMarkers(lng = sites$Long, lat = sites$Lat, weight = 1, popup = sites$Site) %>% 
+  addRasterImage(ndsi_pred, colors = pal2, opacity = 0.8) %>%
+  addLegend(pal = pal3, values = values(ndsi_pred), labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),title = "Predicted NDSI Values")
+
+```
+
+
 
 
 ## Conclusion
@@ -102,19 +357,9 @@ Identifying how habitat structure relates to acoustic diversity, as well as asse
 
 
 
-
-
-
-
 ### R Packages Utilized
 
 The `soundecology`, `tuneR`, and `seewave` packages were utilized in order to read in the sound files and analyze the sound frequencies by Biophony and Anthrophony.  Sound indices were calculated from these frequencies using fuctions within the package to formulate the NDSI, BI, ACI, ADI, and AEI indices for the +1200 records for the 11 sites. The `tidyverse` library was loaded in order for us to clean and "tidy" the data into clean csvs. The csvs were then exported and then re-read back in and converted into a singular dataframe organized by site. Linear models were then created to examine each sound index --in addition to anthrophony & biophony-- vs the NDVI and NDBI results by buffer 500-3000 meters. The linear r squared values were extracted from each of the linear models and compiled into a dataframe organized by buffer size. The r^2 values were then plotted out as "Sound Indices r^2 values vs NDVI by Buffer" and "Sound Indices r^2 values vs NDBI by Buffer". 
-
-We used a combination of linear regression methods to assess the correlation of variables and sound indices, and identified the buffer size or scale of best influence for NDSI values across the study area using the Pearson’s Correlation Coefficient for each measured variable at multiple scales/buffers. 
-
-Once we identified the buffer size representing the highest scale of influence we used a focalWeight circle to replicate the 2500m buffer and passed it over the entirety of the images for imperv, connect, and structure to obtain a  weighted matrix for each. We then used the focal function to pass over each image pixel, and multiplied those weights by each pixel value in the neighborhood, and then summed those to get the mean value raster image for each variable across the entire study area.
-Random forest regression was used to evaluate the variables and find out their order of importance at predicting NDSI values. Finally, we created a model that takes NDSI values at 2500 meters buffer from the sampling location in combination with the mean value raster images in order to estimate NDSI values for the entire study area. 
-
 
 
 A list of used packages in this stage of the analysis are listed in the description folder.
@@ -144,19 +389,7 @@ A list of used packages in this stage of the analysis are listed in the descript
 * library(nlme)
 
 
-From the Amhest [CAPS: Conservation Assessment and Prioritization System, Massachusetts Index of Ecological Integrity 2011 data](http://jamba.provost.ads.umass.edu/web/caps2011/CAPS2011data.htm)
-
-The following variables will be analyzed against the obtained NDSI vs NDVI & NDBI relationship peak values. 
-
-- Imperviousness
-- connectedness 
-- vegetative structure
-- Traffic
-
-
-
-
-# Timelines 
+##  Timelines 
 Provide a timeline for when each portion of the analysis will be completed. These timelines should be constructed relative to the time period of presentations (during the last two weeks of class) and final project submission (during exam week). For teams, names should be associated with each step on the timeline.
 
 * 4/13 -- Both--Draft of Vignette submitted to Github, send screenshots of code to Estes
@@ -176,7 +409,7 @@ Refine code and results
 * 4/22 -- Gabo-- Prepare to run Random Forest Regression
 * 4/27 -- BOTH-- Interpret results and clean up code 
 
-# Anticipated outcomes 
+## Anticipated outcomes 
 
 - Random forest regression between metrics (independent) at the scale of best influence (average filter with kernel size equal to the best buffer size)  and indices (dependent).  
  --- Variables  oncluded in the random forest model: 

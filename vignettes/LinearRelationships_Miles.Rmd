@@ -422,8 +422,10 @@ lc2500 <- lapply(1:4, function(x) {  # x <- 1
   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2500[[x]]), filename = f, overwrite = TRUE)
   return(r)
 })
-lc2500_stacked <- stack(lc2500)  # stack
+lc2500_stacked <- stack(lc2500)  # Stack
 
+
+# lc2500_brick <- brick(lc2500_stacked) # Brick
 
 # Plotting out the results
 tit3 <- "2500 (m) Buffer"
@@ -448,6 +450,9 @@ writeRaster(lc2500_stacked[[1]], file.path(path_out,"lc2500_connect.tif"), overw
 writeRaster(lc2500_stacked[[2]], file.path(path_out,"lc2500_imperv.tif"), overwrite = TRUE)
 writeRaster(lc2500_stacked[[3]], file.path(path_out,"lc2500_structure.tif"), overwrite = TRUE)
 writeRaster(lc2500_stacked[[4]], file.path(path_out, "lc2500_traffic.tif"), overwrite = TRUE)
+
+# writeRaster(lc2500_brick, file.path(path_out,"lc2500_brick.tif"), overwrite = TRUE)
+# write out the brick 
 
 ```
 
@@ -1059,7 +1064,7 @@ RSquaredPlot_NDSI <- ggplot(data = linear_rsquared) +
   labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)", 
        y = "R squared of metrics") 
 
-plot(RSquaredPlot_NDSI)
+RSquaredPlot_NDSI
 plotly::ggplotly(RSquaredPlot_NDSI)
 
 
@@ -1080,7 +1085,7 @@ RSquaredPlot_ANT <- ggplot(data = linear_rsquared) +
   labs(title = "Mean ANT ~ R squared of metrics", x ="Focal Distance (meters)", 
        y = "R squared of metrics") 
 
-plot(RSquaredPlot_ANT)
+RSquaredPlot_ANT
 plotly::ggplotly(RSquaredPlot_ANT)
 
 
@@ -1101,7 +1106,7 @@ RSquaredPlot_Bio <- ggplot(data = linear_rsquared) +
   labs(title = "Mean BIO ~ R squared of metrics", x ="Focal Distance (meters)", 
        y = "R squared of metrics") 
 
-plot(RSquaredPlot_Bio)
+RSquaredPlot_Bio
 plotly::ggplotly(RSquaredPlot_Bio)
 
 
