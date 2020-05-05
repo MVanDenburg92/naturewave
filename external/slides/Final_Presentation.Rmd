@@ -23,11 +23,11 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## __Package: NatureWave__
 
-- Package which analyzes processed Sound Index data for NDSI (Normalized Difference Sound Index)
+- Package that analyzes processed Sound Index data for NDSI (Normalized Difference Sound Index)
 
-- Assesses the correlations between sound indices and ecological variables of interest taking into account different landscape metrics for Massachusets at different scales of influence.
+- Assesses the correlations between sound indices and ecological variables of interest taking into account different landscape metrics for Massachusetts at different scales of influence.
 
-- Evaluates the importance of ecological variables at multiple scales and predicts NDSI values accross the entire study area. 
+- Evaluates the importance of ecological variables at multiple scales and predicts NDSI values across the entire study area. 
 
 
 # Acoustic Indices
@@ -87,7 +87,7 @@ lc_brick <- brick(lc_scaled)
 
 
 #Plot out the scaled landcover images to the AOI boundaries
-plot(lc_brick)
+plot(lc_brick, axes = FALSE, box = FALSE)
 ```
 
 
