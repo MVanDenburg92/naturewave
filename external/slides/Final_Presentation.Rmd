@@ -168,25 +168,40 @@ knitr::include_graphics(here::here("external/slides/figures/Imperv_struture_Conn
 
 # Results from Focal Mean
 
-```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 6, fig.align = 'center'}
 # insert 4 raster surfaces here
 
-lc_brick_focal <- system.file("extdata/lc2500_brick.tif", package = "naturewave") %>% brick()
+# lc_brick_focal <- system.file("extdata/lc2500_brick.tif", package = "naturewave") %>% brick()
 
-
-#
 # Imperv <- raster("../inst/extdata/lc2500_imperv.tif")
 # Connectedness <- raster("../inst/extdata/lc2500_connect.tif")
 # Structure <- raster("../inst/extdata/lc2500_structure.tif")
 # Traffic <- raster("../inst/extdata/lc2500_traffic.tif")
 
-names_list <- list("Connectedness", "Imperviousness", "Structure", "Traffic")
+
+#Read in files post focal weights 
+Imperv <- system.file("extdata/lc2500_imperv.tif", package = "naturewave") %>% raster()
+Connectedness <- system.file("extdata/lc2500_connect.tif", package = "naturewave") %>% raster()
+Structure <- system.file("extdata/lc2500_structure.tif", package = "naturewave") %>% raster()
+Traffic <- system.file("extdata/lc2500_traffic.tif", package = "naturewave") %>% raster()
+
+
+# Create a raster stack
+landcover_ls <- list(Imperv, Connectedness, Structure, Traffic)
+names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
+
+my_brick <- brick(landcover_ls)
+
+plot(my_brick)
+
+
+names_list <- list("Imperviousness","Connectedness",  "Structure", "Traffic")
 
 
 tit3 <- "2500 (m) Buffer"
-par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
+par(mfrow = c(2, 2), mar = c(0, 0, 0, 0))
 lapply(1:4, function(x){
-  plot(lc_brick_focal[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit3,names_list[x])))
+  plot(my_brick[[x]], axes = FALSE, box = FALSE, main = names_list[x])
   plot(st_geometry(sites), add = TRUE)
 })
 
