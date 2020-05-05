@@ -192,9 +192,6 @@ names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
 
 my_brick <- brick(landcover_ls)
 
-plot(my_brick)
-
-
 names_list <- list("Imperviousness","Connectedness",  "Structure", "Traffic")
 
 
