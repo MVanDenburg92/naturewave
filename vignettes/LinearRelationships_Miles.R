@@ -96,7 +96,7 @@ AOI <- st_transform(x = AOI, crs = st_crs(sample_points_f))
 #import counties for US
 # county map of Massachusetts
 
-counties <- st_as_sf(map(database = "county", plot = FALSE, fill = TRUE)) %>% lwgeom::st_make_valid()
+counties <- st_as_sf(maps::map(database = "county", plot = FALSE, fill = TRUE)) %>% lwgeom::st_make_valid()
 
 #add in state and county fields using data from ID column 
 counties <- counties %>% mutate(state = gsub(",.*", "", ID)) %>% mutate(county = gsub(".*,", "", ID))
@@ -123,6 +123,8 @@ plot(ma_crop)
 
 ## ---- warning = FALSE, message = FALSE----------------------------------------
 
+
+path_out <- '../inst/extdata'
 
 ## Two ways of bringing in the Tif Files
 
@@ -227,14 +229,25 @@ names(landcover_list) <- gsub("tif", "", basename(f))
 # names(landcover) <- gsub(".tif", "", basename(f))
 
 
+
+
 #Scale the images subtracting the min values of each (the zero values) and then dividing by the max value possible in the images, 255. 
 lc_scaled <-lapply(landcover_list,function(x){
   (x- cellStats(x, min)) / 255
 })
+
 lc_stack <- stack(lc_scaled)
 
+#converts stack to brick
+lc_brick <- brick(lc_stack)
+#write out the brick
+# writeRaster(lc_brick, file.path(path_out,"lc_stack_scaled.tif"), overwrite = TRUE)
+
+# b <- brick(file.path(path_in, "lc2500_brick.tif"))  # correct, reads in whole brick
+
+
 #Plot out all of the images at once
-plot(lc_stack)
+plot(lc_brick)
 
 # #plot out the Connect layer
 # plot(lc_stack[[1]], main = "connect")
@@ -361,8 +374,6 @@ lapply(1:4, function(x){
 ## -----------------------------------------------------------------------------
 
 # Code to write out rasters for use with the randomforest prediction 
-
-path_out <- '../inst/extdata'
 
 writeRaster(lc2500_stacked[[1]], file.path(path_out,"lc2500_connect.tif"), overwrite = TRUE)
 writeRaster(lc2500_stacked[[2]], file.path(path_out,"lc2500_imperv.tif"), overwrite = TRUE)

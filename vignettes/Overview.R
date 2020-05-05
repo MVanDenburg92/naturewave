@@ -1,7 +1,7 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 #[1]
 
 library(ggplot2)
@@ -22,7 +22,7 @@ plotly::ggplotly(RSquaredPlot_NDVI)
 
 
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 #[2]
 # #NDSI vs Impervious
 # lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, 
@@ -74,7 +74,7 @@ plotly::ggplotly(RSquaredPlot_NDVI)
 
 
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'----
 #[3]
 
 library(raster)
@@ -116,7 +116,7 @@ my_brick <- brick(landcover_ls)
 plot(my_brick, axes = FALSE, box = FALSE)
 
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 #[4]
 DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
 
@@ -147,7 +147,7 @@ rf_2500 <- randomForest::randomForest(NDSI ~., data=DS_2500_scaled, mtry= 2, imp
 print(rf_2500)
 
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 #[5]
 
 library(ggplot2)
@@ -168,7 +168,7 @@ RSquaredPlot_NDSI <- ggplot(data = linear_rsquared_new) +
 
 plotly::ggplotly(RSquaredPlot_NDSI)
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 #[6]
 # Show "importance" of variables: higher value means more important:
 round(randomForest::importance(rf_2500), 2)
@@ -176,7 +176,7 @@ round(randomForest::importance(rf_2500), 2)
 # Visualize Variable Importance Plot
 randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer level")
 
-## ---- error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
+## ---- error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'----
 library(leaflet)
 #[7]
 # Use raster::predict to predict NDSI values across the landscape
