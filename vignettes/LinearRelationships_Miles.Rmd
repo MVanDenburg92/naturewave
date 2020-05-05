@@ -315,15 +315,15 @@ lc_scaled <-lapply(landcover_list,function(x){
 lc_stack <- stack(lc_scaled)
 
 #converts stack to brick
-# lc_brick <- brick(lc_stack)
-#write out the brick 
+lc_brick <- brick(lc_stack)
+#write out the brick
 # writeRaster(lc_brick, file.path(path_out,"lc_stack_scaled.tif"), overwrite = TRUE)
 
 # b <- brick(file.path(path_in, "lc2500_brick.tif"))  # correct, reads in whole brick
 
 
 #Plot out all of the images at once
-plot(lc_stack)
+plot(lc_brick)
 
 # #plot out the Connect layer
 # plot(lc_stack[[1]], main = "connect")

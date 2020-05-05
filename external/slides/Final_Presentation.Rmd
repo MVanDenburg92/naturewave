@@ -49,47 +49,89 @@ This project provides a less costly-reproducible approach to measurement and ana
 Statewide Massachusetts Assessment: November 2011
 http://jamba.provost.ads.umass.edu/web/caps2011/CAPS2011data.htm
 
-__* Imperviousness:__ http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/imperv.zip
+- Dr. Florencia Sangermano collected recordings at 11 different sites in Central Mass. over the course of 3 months between June and August. 
 
 
-__* Connectedness:__ http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/connect.zip
-      
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 6, fig.align = 'center'}
+#Code to bring in the pertinent files of sites, the image to crop the landcover data, and the landcover data
 
-__* Vegetative structure:__ http://jamba.provost.ads.umass.edu/web/caps2011/tiffzips/settings/structure.zip
-      
+library(raster)
+library(dplyr)
+library(sf)
 
-__* Road traffic:__ http://jamba.provost.ads.umass.edu/web/CAPS2011/tiffzips/metricsraw/traffic.zip
+##sites
+sites <- system.file("extdata/sample_sites_projected.shp", package = "naturewave")
 
--Dr. Florencia Sangermano collected recordings at 11 different sites in Central Mass. over the course of 3 months between June and August. 
+sites <- st_read(dsn = sites)
+
+#Area of interest polygon used to crop sites. 
+AOI <- system.file("extdata/AOI.shp", package = "naturewave") %>% st_read(.)
+AOI <- st_transform(x = AOI, crs = st_crs(sites))
+
+
+##LandCover Data
+Imperv_orig <- system.file("extdata/imperv.tif", package = "naturewave") %>% raster(crs = crs(sites)) %>% crop(., y = AOI)
+Connectedness_orig <- system.file("extdata/connect.tif", package = "naturewave") %>% raster(crs = crs(sites)) %>% crop(., y = AOI)
+Structure_orig <- system.file("extdata/structure.tif", package = "naturewave") %>% raster(crs = crs(sites)) %>% crop(., y = AOI)
+Traffic_orig <- system.file("extdata/traffic.tif", package = "naturewave") %>% raster(crs = crs(sites)) %>% crop(., y = AOI)
+
+landcover_list <- list(Imperv_orig, Connectedness_orig, Structure_orig, Traffic_orig)
+
+names(landcover_list) <- c("Imperviousness", "Connectedness", "Structure", "Traffic")
+
+lc_scaled <-lapply(landcover_list, function(x){
+  (x- cellStats(x, min)) / 255
+})
+
+lc_brick <- brick(lc_scaled)
+
+
+#Plot out the scaled landcover images to the AOI boundaries
+plot(lc_brick)
+```
 
 
 # Methodology
 
-## __Preliminary Work__
+## __Focal Mean__
 
-```{r,  eval = FALSE, echo = TRUE}
-# Focal Mean using circular focalWeight at a buffer of 2500 meters
-
-# Create a raster stack
-landcover_ls <- list(Imperv, Connectedness, Structure, Traffic)
-names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
-
-my_brick <- brick(landcover_ls)
-
-
-# b <- brick(file.path(path_in, "lc2500_brick.tif"))  # correct, reads in whole brick
-
-# mass <- st_as_sf(map(database = "state", plot = FALSE, fill = TRUE)) %>% lwgeom::st_make_valid() %>% filter(ID == "massachusetts")
-
+```{r,  eval = TRUE, echo = TRUE}
+# # Focal Mean using circular focalWeight at a buffer of 2500 meters
+# 
+# #2500 Buffers
+# 
+# fw_sum_2500 <- lapply(landcover_list,function(x){
+#   fw <- focalWeight(x, 2500, type='circle')
+#   })
+# 
+# 
+# #Runs focal at a buffer weight of 2500 m radius
+# 
+# radius3 <- 2500
+# lc2500 <- lapply(1:4, function(x) {  # x <- 1
+#   f <- paste0("../external/data/Amherst_CAPS2011", names(lc_stack)[x], "_", radius3, ".tif")
+#   r <- focal(lc_stack[[x]], w = as.matrix(fw_sum_2500[[x]]), filename = f, overwrite = TRUE)
+#   return(r)
+# })
+# lc2500_stacked <- stack(lc2500)  # Stack
+# 
+# 
+# # lc2500_brick <- brick(lc2500_stacked) # Brick
+# 
+# # Plotting out the results
+# tit3 <- "2500 (m) Buffer"
 # par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
-plot(my_brick, axes = FALSE, box = FALSE)
+# lapply(1:4, function(x){
+#   plot(lc2500_stacked[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit3, gsub(".tif", "", basename(f[x])))))
+#   plot(st_geometry(sample_points_f), add = TRUE)
+# })
 
 ```
 
 
 ## __Random Forest__
 
-```{r, eval = FALSE, echo = TRUE}
+```{r, eval = FALSE, echo = TRUE, include = TRUE}
 # Create RandomForest Model
 set.seed(100)
 rf_2500 <- randomForest(NDSI ~., data=DS_2500_scaled, mtry= 2, importance = TRUE, na.action=na.omit)
@@ -98,7 +140,7 @@ randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer lev
 
 ```
 
-## __Preditive modeling__
+## __Predictive modeling__
 
 
 ```{r, eval = FALSE, echo=TRUE}
@@ -114,69 +156,39 @@ ndsi_pred
 
 ```{r, echo=FALSE, out.width='70%', fig.show='hold', fig.align='center', fig.width=3, fig.height=3}
 
-knitr::include_graphics(here::here("external/slides/figures/NDBIRSquared_Final.png"))
-
-knitr::include_graphics(here::here("external/slides/figures/NDBI_NDSIFinal.png"))
-
-knitr::include_graphics(here::here("external/slides/figures/Imperv_struture_Connect_Traffic_NDSI.png"))
-
+knitr::include_graphics(here::here("external/slides/figures/NDVI_NDSIRSquared.png"))
 
 knitr::include_graphics(here::here("external/slides/figures/NDVI_NDSIFinal.png"))
 
-```
+knitr::include_graphics(here::here("external/slides/figures/Imperv_struture_Connect_Traffic_NDSI.png"))
 
-# Graph results
-
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
-#[5]
-
-library(ggplot2)
-
-getwd()
-
-linear_rsquared_new <- system.file("extdata/linear_rsquared_traffic_included.csv", package = "naturewave")
-
-linear_rsquared_new <- read.csv(linear_rsquared_new)
-
-RSquaredPlot_NDSI <- ggplot(data = linear_rsquared_new) +
-  geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Imperv_lm,
-                color = 'Imperv')) +
-  geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Structure_lm,
-                color = 'Structure')) +
-  geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Connect_lm,
-                color = 'Connect')) +
- geom_line(aes(x = linear_rsquared_new$Buffer, y = linear_rsquared_new$NDSI_Traffic_lm,
-               color = 'Traffic')) + scale_x_log10() +
-  labs(title = "Mean NDSI ~ R squared of metrics", x ="Focal Distance (meters)",
-       y = "R squared of metrics")
-
-plotly::ggplotly(RSquaredPlot_NDSI)
 ```
 
 
-# Surfaces
 
-```{r, eval = FALSE, echo=TRUE}
+# Results from Focal Mean
+
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'}
 # insert 4 raster surfaces here
 
-          
-Imperv <- raster("../inst/extdata/lc2500_imperv.tif")
-Connectedness <- raster("../inst/extdata/lc2500_connect.tif")
-Structure <- raster("../inst/extdata/lc2500_structure.tif")
-Traffic <- raster("../inst/extdata/lc2500_traffic.tif")
+lc_brick_focal <- system.file("extdata/lc2500_brick.tif", package = "naturewave") %>% brick()
 
 
+#
+# Imperv <- raster("../inst/extdata/lc2500_imperv.tif")
+# Connectedness <- raster("../inst/extdata/lc2500_connect.tif")
+# Structure <- raster("../inst/extdata/lc2500_structure.tif")
+# Traffic <- raster("../inst/extdata/lc2500_traffic.tif")
+
+names_list <- list("Connectedness", "Imperviousness", "Structure", "Traffic")
 
 
-r_path <- dir("./data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif")
-# landcover <- lapply(unname(r_path), function(x) {
-#   r <- raster(x)
-#   crs(r) <- crs(pts)
-#   r
-# })
-# names(landcover) <- gsub(".tif", "", basename(f))
-
-
+tit3 <- "2500 (m) Buffer"
+par(mfrow = c(2, 2), mar = c(.5, 0, 2, 6))
+lapply(1:4, function(x){
+  plot(lc_brick_focal[[x]], axes = FALSE, box = FALSE, main = toupper(c(tit3,names_list[x])))
+  plot(st_geometry(sites), add = TRUE)
+})
 
 ```
 
@@ -186,6 +198,35 @@ r_path <- dir("./data/Amherst_CAPS2011", full.names = TRUE, pattern = ".tif")
 ## __Variable Importance plot__
 
 ```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+
+# DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
+
+DS <- system.file("extdata/Imperv_connect_Struct_Traffic_NDSI.csv", package = "naturewave")
+DS <- read.csv(DS)
+# Filter values using 2500 as the scale of best influence
+DS_2500 <- DS %>% dplyr::filter(Buffer == "Buffer 2500 (m)") %>%
+  dplyr::select(-c(Buffer, SiteName, Biophony, Anthrophony)) %>% rename("Connectedness" = Connectdness)
+
+# Scale variable values except NDSI values 
+DS_2500_scaled <- DS_2500[,1:4]/255
+
+# Use mutate to add NDSI values back to the table. 
+DS_2500_scaled <- DS_2500_scaled %>% mutate("NDSI" = DS_2500$NDSI)
+
+# Create training and testing samples
+sample = caTools::sample.split(DS_2500$NDSI, SplitRatio = .75)
+train = subset(DS_2500, sample == TRUE)
+test  = subset(DS_2500, sample == FALSE)
+
+# Check out the dimensions of each sample set
+dim(train)
+dim(test)
+
+# Create RandomForest Model
+set.seed(100)
+rf_2500 <- randomForest::randomForest(NDSI ~., data=DS_2500_scaled, mtry= 2, importance = TRUE, na.action=na.omit)
+
+print(rf_2500)
 
 # Variable importance plot
 
@@ -201,9 +242,23 @@ randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer lev
 
 ## __NDSI Predidictive surface__
 
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.align = 'center'}
 
 library(leaflet)
+
+
+#Read in files post focal weights 
+Imperv <- system.file("extdata/lc2500_imperv.tif", package = "naturewave") %>% raster()
+Connectedness <- system.file("extdata/lc2500_connect.tif", package = "naturewave") %>% raster()
+Structure <- system.file("extdata/lc2500_structure.tif", package = "naturewave") %>% raster()
+Traffic <- system.file("extdata/lc2500_traffic.tif", package = "naturewave") %>% raster()
+# Create a raster stack
+landcover_ls <- list(Imperv, Connectedness, Structure, Traffic)
+names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
+
+my_brick <- brick(landcover_ls)
+
+
 # Insert Predicted NDSI Surface
 
 # Use raster::predict to predict NDSI values across the landscape
@@ -221,13 +276,13 @@ ndsi_pred <- raster::predict(object = my_brick, model=rf_2500, type = 'response'
 ## values     : 0.2626267, 0.7772814  (min, max
 
 
-# Display NDSI prediction layer with sample locations. First, set the CRS for the sampling locations to match the one from the raster image
-
-sites <- system.file("extdata/sample_sites_projected.shp", package = "naturewave")
-
-
-sites <- st_read(dsn = sites)
-sites <- st_transform(x = sites, crs = st_crs(ndsi_pred))
+# # Display NDSI prediction layer with sample locations. First, set the CRS for the sampling locations to match the one from the raster image
+# 
+# sites <- system.file("extdata/sample_sites_projected.shp", package = "naturewave")
+# 
+# 
+# sites <- st_read(dsn = sites)
+# sites <- st_transform(x = sites, crs = st_crs(ndsi_pred))
 
 # Plot variables and predicted NDSI raster image
 

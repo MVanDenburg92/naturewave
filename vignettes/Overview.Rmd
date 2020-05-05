@@ -100,7 +100,7 @@ as seen in Figure 1 below.
 
 #### Code Chunk 1: Pearson correlation coefficient for each measured index at multiple scales.
 
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 #[1]
 
 library(ggplot2)
@@ -130,7 +130,7 @@ plotly::ggplotly(RSquaredPlot_NDVI)
 - We used a combination of linear regression methods to assess the correlation of variables and sound indices, and identified the buffer size or scale of best influence for NDSI values across the study area using the Pearson’s Correlation Coefficient for each measured variable at multiple scales/buffers. 
 
 #### Code Chunk 2: Code used to create linear models between NDSI and the variables of interest
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 #[2]
 # #NDSI vs Impervious
 # lm_NDSI_Imperv <- lmList(NDSI ~ Imperv | Buffer, 
@@ -189,7 +189,7 @@ plotly::ggplotly(RSquaredPlot_NDVI)
 
 #### Code Chunk 3: Focal Mean using a circular focalweight at a buffer of 2500 m 
 
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 8, fig.align = 'center'}
 #[3]
 
 library(raster)
@@ -237,7 +237,7 @@ plot(my_brick, axes = FALSE, box = FALSE)
 
 
 #### Code Chunk 4: Code to train and create random forest model
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 #[4]
 DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
 
@@ -280,7 +280,7 @@ By examining the R square values from the linear correlation using Pearson’s C
 
 #### Code Chunk 5: Code to run R^2 Plot of Variables vs NDSI Sound Index
 
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 #[5]
 
 library(ggplot2)
@@ -311,7 +311,7 @@ Traffic has a %IncMSE of 9.61 and Imperviousness has a %IncMSE value of 6.69. Th
 
 
 #### Code Chunk 6: Variable Importance Results of RF Regression
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 #[6]
 # Show "importance" of variables: higher value means more important:
 round(randomForest::importance(rf_2500), 2)
@@ -326,7 +326,7 @@ The result from modeling is a continuous surface predicting NDSI values across t
 
 
 #### Code Chunk 7: Code to Plot out the Predicted NDSI Values using Leaflet
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 library(leaflet)
 #[7]
 # Use raster::predict to predict NDSI values across the landscape
