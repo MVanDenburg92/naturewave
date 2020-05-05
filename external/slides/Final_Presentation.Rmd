@@ -168,7 +168,7 @@ knitr::include_graphics(here::here("external/slides/figures/Imperv_struture_Conn
 
 # Results from Focal Mean
 
-```{r, error = FALSE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 6, fig.align = 'center'}
+```{r, error = FALSE, warning = FALSE, message = FALSE, fig.align = 'center'}
 # insert 4 raster surfaces here
 
 # lc_brick_focal <- system.file("extdata/lc2500_brick.tif", package = "naturewave") %>% brick()
@@ -192,15 +192,17 @@ names(landcover_ls) <- c("Imperv", "Connectedness", "Structure", "Traffic")
 
 my_brick <- brick(landcover_ls)
 
-names_list <- list("Imperviousness","Connectedness",  "Structure", "Traffic")
+#names_list <- list("Imperviousness","Connectedness",  "Structure", "Traffic")
 
+par(mar = c(1, 0, 1, 0))
+plot(my_brick, axes = FALSE, box = FALSE)
 
-tit3 <- "2500 (m) Buffer"
-par(mfrow = c(2, 2), mar = c(2, 0, 2, 0))
-lapply(1:4, function(x){
-  plot(my_brick[[x]], axes = FALSE, box = FALSE, main = names_list[x])
-  plot(st_geometry(sites), add = TRUE)
-})
+# tit3 <- "2500 (m) Buffer"
+# par(mfrow = c(2, 2), mar = c(1, 0, 1, 3))
+# lapply(1:4, function(x){
+#   plot(my_brick[[x]], axes = FALSE, box = FALSE, main = names_list[x])
+#   plot(st_geometry(sites), add = TRUE)
+# })
 
 ```
 
@@ -209,7 +211,7 @@ lapply(1:4, function(x){
 
 ## __Variable Importance plot__
 
-```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
+```{r, error = TRUE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 6,  fig.align = 'center'}
 
 # DS <- read.csv('../inst/extdata/Imperv_connect_Struct_Traffic_NDSI.csv', header = T) 
 
