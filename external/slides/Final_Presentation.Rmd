@@ -38,7 +38,7 @@ The Normalized Difference Soundscape Index (NDSI) characterizes soundscape prope
 
 This partitioning allows the classification of a particular location based on its ecological and anthropic characteristics.
 
-__NDSI = (biophony - anthrophony)/ (biophony + anthrophony)__
+__NDSI = (biophony - anthrophony) / (biophony + anthrophony)__
 
 This project provides a less costly-reproducible approach to measurement and analysis and contributes to the applications of remote sensing technologies in conservation planning and monitoring of habitat quality.
 
@@ -140,7 +140,7 @@ randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer lev
 
 ```
 
-## __Predictive modeling__
+## __Predictive Modeling__
 
 
 ```{r, eval = FALSE, echo=TRUE}
@@ -150,7 +150,7 @@ ndsi_pred
 ```
 
 
-# Results from Preliminary work
+# Results from Preliminary Work
 
 ## __Linear Modeling__
 
@@ -196,7 +196,7 @@ names_list <- list("Imperviousness","Connectedness",  "Structure", "Traffic")
 
 
 tit3 <- "2500 (m) Buffer"
-par(mfrow = c(2, 2), mar = c(0, 0, 0, 0))
+par(mfrow = c(2, 2), mar = c(2, 0, 2, 0))
 lapply(1:4, function(x){
   plot(my_brick[[x]], axes = FALSE, box = FALSE, main = names_list[x])
   plot(st_geometry(sites), add = TRUE)
@@ -226,19 +226,19 @@ DS_2500_scaled <- DS_2500[,1:4]/255
 DS_2500_scaled <- DS_2500_scaled %>% mutate("NDSI" = DS_2500$NDSI)
 
 # Create training and testing samples
-sample = caTools::sample.split(DS_2500$NDSI, SplitRatio = .75)
-train = subset(DS_2500, sample == TRUE)
-test  = subset(DS_2500, sample == FALSE)
+#sample = caTools::sample.split(DS_2500$NDSI, SplitRatio = .75)
+#train = subset(DS_2500, sample == TRUE)
+#test  = subset(DS_2500, sample == FALSE)
 
 # Check out the dimensions of each sample set
-dim(train)
-dim(test)
+#dim(train)
+#dim(test)
 
 # Create RandomForest Model
 set.seed(100)
 rf_2500 <- randomForest::randomForest(NDSI ~., data=DS_2500_scaled, mtry= 2, importance = TRUE, na.action=na.omit)
 
-print(rf_2500)
+#print(rf_2500)
 
 # Variable importance plot
 
@@ -250,9 +250,9 @@ randomForest::varImpPlot(rf_2500, main = "Variable Importance at 2500 buffer lev
 ```
 
 
-# Results from ¨Predictive Modeling
+# Results from Predictive Modeling
 
-## __NDSI Predidictive surface__
+## __NDSI Predictive surface__
 
 ```{r, error = TRUE, warning = FALSE, message = FALSE, fig.align = 'center'}
 
@@ -329,6 +329,6 @@ leaflet() %>% addTiles() %>% addCircleMarkers(lng = sites$Long, lat = sites$Lat,
 
 - Test further variables such as ecological integrity and micro climate alterations. 
 
-- Validate the predictive model based on an independent acoustic sample collected during May to July in the near future, following the same coection stantards as before. 
+- Validate the predictive model based on an independent acoustic sample collected during May to July in the near future, following the same data collection stantards as before. 
 
 - Assess the capacity of models to extrapolate relationships between habitat structure and acoustic diversity. 
